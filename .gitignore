@@ -1,0 +1,3 @@
+# ignore gits from other repos just in case
+
+./*/.git
