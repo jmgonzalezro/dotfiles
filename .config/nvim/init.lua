@@ -681,7 +681,6 @@ cmp.setup {
   },
 }
 
-vim.opt.termguicolors = true
 vim.wo.colorcolumn = "80"
 
 -- The line beneath this is called `modeline`. See `:help modeline`
