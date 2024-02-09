@@ -218,6 +218,10 @@ require('lazy').setup({
       },
     },
   },
+  { 'nvim-tree/nvim-tree' },
+
+
+
 
   {
     -- Highlight, edit, and navigate code
