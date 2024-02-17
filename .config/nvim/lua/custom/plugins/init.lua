@@ -1,3 +1,19 @@
+local show_venv = function()
+    -- only show virtual env for Python
+    if vim.bo.filetype ~= 'python' then
+        return ""
+    end
+    local venv_path = os.getenv('VIRTUAL_ENV')
+
+    if venv_path == nil then
+        return "<NO VENV>"
+    else
+        local venv_name = vim.fn.fnamemodify(venv_path, ':t')
+        return string.format("  %s", venv_name)
+    end
+end
+
+
 return {
     {
         'echasnovski/mini.cursorword',
@@ -68,20 +84,7 @@ return {
                 lualine_a = { 'mode' },
                 lualine_b = { 'branch', 'diff', 'diagnostics' },
                 lualine_c = { 'filename' },
-                lualine_x = { function()
-                    -- only show virtual env for Python
-                    if vim.bo.filetype ~= 'python' then
-                        return ""
-                    end
-                    local venv_path = os.getenv('VIRTUAL_ENV')
-
-                    if venv_path == nil then
-                        return "<NO VENV>"
-                    else
-                        local venv_name = vim.fn.fnamemodify(venv_path, ':t')
-                        return string.format("  %s", venv_name)
-                    end
-                end,
+                lualine_x = { show_venv,
                     'fileformat', 'filetype' },
                 lualine_y = { 'progress' },
                 lualine_z = { 'location' }
