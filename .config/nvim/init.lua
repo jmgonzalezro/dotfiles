@@ -401,6 +401,7 @@ vim.keymap.set("n", "<leader>`", "<cmd>e #<cr>", { desc = "Switch to Other Buffe
 
 -- Close buffers
 vim.keymap.set("n", "<A-ESC>", ":%bd|e#|bd# <CR>")
+vim.keymap.set("n", "<leader>bd", ":bd", { desc = "Close current buffer" })
 
 -- Running the current buffer in Python
 -- vim.keymap.set("n", "<A-CR>", ":TermExec cmd='python %' size=10 direction=horizontal <CR>")
@@ -453,7 +454,7 @@ vim.keymap.set("v", "p", '"_dP')
 vim.keymap.set("n", "<leader>l", "<cmd>:Lazy<cr>", { desc = "Lazy" })
 
 -- Mason
-vim.keymap.set("n", "<leader>m", "<cmd>:Mason<cr>", { desc = "Mason" })
+vim.keymap.set("n", "<leader>M", "<cmd>:Mason<cr>", { desc = "Mason" })
 
 -- Format
 vim.keymap.set("n", "<leader>ff", "<cmd>:Format<cr>", { desc = "Format file" })
