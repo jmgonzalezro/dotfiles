@@ -24,7 +24,6 @@ require('lazy').setup({
 
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
-
   {
     'neovim/nvim-lspconfig',
     dependencies = {
@@ -401,7 +400,7 @@ vim.keymap.set("n", "<leader>`", "<cmd>e #<cr>", { desc = "Switch to Other Buffe
 
 -- Close buffers
 vim.keymap.set("n", "<A-ESC>", ":%bd|e#|bd# <CR>")
-vim.keymap.set("n", "<leader>bd", ":bd", { desc = "Close current buffer" })
+vim.keymap.set("n", "<leader>bd", ":bd<CR>", { desc = "Close current buffer" })
 
 -- Running the current buffer in Python
 -- vim.keymap.set("n", "<A-CR>", ":TermExec cmd='python %' size=10 direction=horizontal <CR>")
@@ -463,6 +462,14 @@ vim.keymap.set("n", "<leader>ff", "<cmd>:Format<cr>", { desc = "Format file" })
 vim.keymap.set("n", "<leader>fn", "<cmd>enew<cr>", { desc = "New File" })
 vim.keymap.set("n", "<leader>xl", "<cmd>lopen<cr>", { desc = "Location List" })
 vim.keymap.set("n", "<leader>xq", "<cmd>copen<cr>", { desc = "Quickfix List" })
+
+-- iron also has a list of commands, see :h iron-commands for all available commands
+vim.keymap.set('n', '<space>rs', '<cmd>IronRepl<cr>')
+vim.keymap.set('n', '<space>rr', '<cmd>IronRestart<cr>')
+vim.keymap.set('n', '<space>rf', '<cmd>IronFocus<cr>')
+vim.keymap.set('n', '<space>rh', '<cmd>IronHide<cr>')
+
+
 
 -- Mini Files
 vim.keymap.set("n", "<leader>e", "<cmd>NvimTreeToggle<cr>", { desc = "[E]xplore files" })
