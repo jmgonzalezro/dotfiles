@@ -463,11 +463,11 @@ vim.keymap.set("n", "<leader>fn", "<cmd>enew<cr>", { desc = "New File" })
 vim.keymap.set("n", "<leader>xl", "<cmd>lopen<cr>", { desc = "Location List" })
 vim.keymap.set("n", "<leader>xq", "<cmd>copen<cr>", { desc = "Quickfix List" })
 
--- iron also has a list of commands, see :h iron-commands for all available commands
-vim.keymap.set('n', '<space>rs', '<cmd>IronRepl<cr>')
-vim.keymap.set('n', '<space>rr', '<cmd>IronRestart<cr>')
-vim.keymap.set('n', '<space>rf', '<cmd>IronFocus<cr>')
-vim.keymap.set('n', '<space>rh', '<cmd>IronHide<cr>')
+-- slimux
+vim.keymap.set('v', '<leader>r', ':lua require("slimux").send_highlighted_text()<cr>',
+  { desc = 'Send currently highlighted text to configured tmux pane' })
+vim.keymap.set('n', '<leader>r', ':lua require("slimux").send_paragraph_text()<cr>',
+  { desc = 'Send paragraph under cursor to configured tmux pane' })
 
 
 
