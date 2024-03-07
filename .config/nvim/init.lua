@@ -457,6 +457,8 @@ vim.keymap.set("n", "<leader>M", "<cmd>:Mason<cr>", { desc = "Mason" })
 
 -- Format
 vim.keymap.set("n", "<leader>ff", "<cmd>:Format<cr>", { desc = "Format file" })
+vim.keymap.set("n", "<leader>fb", "<cmd>:!black %<cr>", { desc = "Black formatter" })
+vim.keymap.set("n", "<leader>fi", "<cmd>:!isort %<cr>", { desc = "Isort imports formatter" })
 
 -- new file
 vim.keymap.set("n", "<leader>fn", "<cmd>enew<cr>", { desc = "New File" })
@@ -464,9 +466,9 @@ vim.keymap.set("n", "<leader>xl", "<cmd>lopen<cr>", { desc = "Location List" })
 vim.keymap.set("n", "<leader>xq", "<cmd>copen<cr>", { desc = "Quickfix List" })
 
 -- slimux
-vim.keymap.set('v', '<leader>r', ':lua require("slimux").send_highlighted_text()<cr>',
+vim.keymap.set('v', '<leader>rc', ':lua require("slimux").send_highlighted_text()<cr>',
   { desc = 'Send currently highlighted text to configured tmux pane' })
-vim.keymap.set('n', '<leader>r', ':lua require("slimux").send_paragraph_text()<cr>',
+vim.keymap.set('n', '<leader>rp', ':lua require("slimux").send_paragraph_text()<cr>',
   { desc = 'Send paragraph under cursor to configured tmux pane' })
 
 
