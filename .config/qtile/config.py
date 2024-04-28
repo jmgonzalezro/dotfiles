@@ -1,5 +1,5 @@
 from libqtile import bar, layout, qtile, widget
-from libqtile.config import Click, Drag, Group, Key, Match, Screen
+from libqtile.config import Click, Drag, Group, Key, Match, Screen, ScratchPad, DropDown
 from libqtile.lazy import lazy
 from libqtile.utils import guess_terminal
 
@@ -34,6 +34,7 @@ keys = [
     Key([mod, "control"], "j", lazy.layout.grow_down(), desc="Grow window down"),
     Key([mod, "control"], "k", lazy.layout.grow_up(), desc="Grow window up"),
     Key([mod], "n", lazy.layout.normalize(), desc="Reset all window sizes"),
+    Key([mod], "d", lazy.spawn("rofi -show drun")),
     # Toggle between split and unsplit sides of stack.
     # Split = all windows displayed
     # Unsplit = 1 window displayed, like Max layout, but still with
@@ -77,6 +78,12 @@ keys = [
     # Brightness
     Key([], "XF86MonBrightnessUp", lazy.spawn("brightnessctl set +5%")),
     Key([], "XF86MonBrightnessDown", lazy.spawn("brightnessctl set 5%-")),
+    # Screenshtos
+    Key(
+        [mod],
+        "Print",
+        lazy.spawn("scrot /home/jose/Images/%Y-%m-%d-%T-screenshot.png"),
+    ),
 ]
 
 # Add key bindings to switch VTs in Wayland.
@@ -119,21 +126,6 @@ for i in groups:
         ]
     )
 
-layouts = [
-    layout.Columns(border_focus_stack=["#d75f5f", "#8f3d3d"], border_width=4),
-    layout.Max(),
-    # Try more layouts by unleashing below layouts.
-    # layout.Stack(num_stacks=2),
-    # layout.Bsp(),
-    # layout.Matrix(),
-    # layout.MonadTall(),
-    # layout.MonadWide(),
-    # layout.RatioTile(),
-    # layout.Tile(),
-    # layout.TreeTab(),
-    # layout.VerticalTile(),
-    # layout.Zoomy(),
-]
 
 widget_defaults = dict(
     font="sans",
@@ -146,7 +138,6 @@ screens = [
     Screen(
         bottom=bar.Bar(
             [
-                widget.CurrentLayout(),
                 widget.GroupBox(),
                 widget.Prompt(),
                 widget.WindowName(),
@@ -159,6 +150,14 @@ screens = [
                 # NB Systray is incompatible with Wayland, consider using StatusNotifier instead
                 # widget.StatusNotifier(),
                 widget.Systray(),
+                widget.Net(
+                    interface="wlan0",
+                    format="   {down}",
+                    prefix="k",
+                    fontsize=14,
+                    padding=5,  # Adjust the padding as needed
+                    mouse_callbacks={"Button1": lazy.spawn("networkmanager_dmenu")},
+                ),
                 widget.Volume(),
                 widget.KeyboardLayout(configured_keyboards=["us", "es"]),
                 widget.Battery(
