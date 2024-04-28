@@ -63,6 +63,14 @@ keys = [
     Key([mod, "control"], "r", lazy.reload_config(), desc="Reload the config"),
     Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown Qtile"),
     Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
+    Key(
+        [
+            mod,
+        ],
+        "space",
+        lazy.widget["keyboardlayout"].next_keyboard(),
+        desc="Next keyboard layout",
+    ),
     Key([], "XF86AudioMute", lazy.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")),
     # Key([], 'XF86AudioLowerVolume', lazy.spawn('pulseaudio-ctl down +5%')),
     # Key([], 'XF86AudioRaiseVolume', lazy.spawn('pulseaudio-ctl up +5%')),
@@ -152,6 +160,7 @@ screens = [
                 # widget.StatusNotifier(),
                 widget.Systray(),
                 widget.Volume(),
+                widget.KeyboardLayout(configured_keyboards=["us", "es"]),
                 widget.Battery(
                     low_foreground="#bf616a",
                     charge_char="󱊥 ",
@@ -160,6 +169,7 @@ screens = [
                     empty_char="󱃍 ",
                     hide_threshold=0.99,
                     low_percentage=0.2,
+                    format="{char} {percent:2.0%}",
                 ),
                 widget.Clock(format="%Y-%m-%d - %I:%M %p"),
             ],
