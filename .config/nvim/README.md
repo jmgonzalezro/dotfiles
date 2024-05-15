@@ -22,6 +22,7 @@ The main function of this IDE is to use space as function trigger. But it works 
 *  Bufferline: Showing opened buffers at the top of the screen and not saved ones
     
 *  LSP: Coding completion plugin
+>>>>>>> 8f924d8 (updating and syncing with dotfile version)
     
 *  Comment: Easy and language agnostic commenting tool
     

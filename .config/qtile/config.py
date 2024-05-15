@@ -1,5 +1,5 @@
 from libqtile import bar, layout, qtile, widget
-from libqtile.config import Click, Drag, Group, Key, Match, Screen, ScratchPad, DropDown
+from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
 from libqtile.utils import guess_terminal
 
@@ -147,15 +147,13 @@ screens = [
                     },
                     name_transform=lambda name: name.upper(),
                 ),
-                # NB Systray is incompatible with Wayland, consider using StatusNotifier instead
-                # widget.StatusNotifier(),
                 widget.Systray(),
                 widget.Net(
                     interface="wlan0",
                     format="   {down}",
                     prefix="k",
-                    fontsize=14,
-                    padding=5,  # Adjust the padding as needed
+                    fontsize=12,
+                    padding=5,
                     mouse_callbacks={"Button1": lazy.spawn("networkmanager_dmenu")},
                 ),
                 widget.Volume(),
