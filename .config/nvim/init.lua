@@ -210,10 +210,10 @@ vim.o.expandtab = true          -- convert tabs to spaces
 vim.o.shiftwidth = 4            -- the number of spaces inserted for each indentation
 vim.o.tabstop = 4               -- insert 2 spaces for a tab
 vim.o.cursorline = true         -- highlight the current line
-vim.o.number = true             -- set numbered lines
-vim.o.relativenumber = true     -- set relative numbered lines
+vim.o.number = false            -- set numbered lines
+vim.o.relativenumber = false    -- set relative numbered lines
 vim.o.numberwidth = 1           -- set number column width to 2 {default 4}
-vim.opt.statuscolumn = "%=%{v:virtnum < 1 ? (v:relnum ? v:relnum : v:lnum < 10 ? v:lnum . '' : v:lnum) : ''}%=%s"
+-- vim.opt.statuscolumn = "%=%{v:virtnum < 1 ? (v:relnum ? v:relnum : v:lnum < 10 ? v:lnum . '' : v:lnum) : ''}%=%s"
 vim.o.signcolumn = "yes"
 vim.api.nvim_set_hl(0, 'SignColumn', { clear }) -- sign column without background
 vim.o.wrap = false                              -- display lines as one long line
