@@ -152,10 +152,8 @@ require('lazy').setup({
       dim_inactive = true,
       transparent_mode = true,
     },
-    config = function()
-      vim.cmd.colorscheme 'everforest'
-    end,
   },
+  -- config =   },
   {
     'lukas-reineke/indent-blankline.nvim',
     -- See `:help ibl`
@@ -195,6 +193,9 @@ require('lazy').setup({
   --    For additional information see: https://github.com/folke/lazy.nvim#-structuring-your-plugins
   { import = 'custom.plugins' },
 }, {})
+
+-- Select default colorscheme
+vim.cmd.colorscheme 'everforest'
 
 require("lazy").setup({
 })
