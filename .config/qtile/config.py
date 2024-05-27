@@ -2,8 +2,15 @@ from libqtile import bar, layout, qtile, widget
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
 from libqtile.utils import guess_terminal
+from libqtile import qtile
 
+if qtile.core.name == "x11":
+    term = "urxvt"
+elif qtile.core.name == "wayland":
+    term = "foot"
 mod = "mod4"
+
+
 terminal = guess_terminal()
 
 keys = [
@@ -73,8 +80,8 @@ keys = [
         desc="Next keyboard layout",
     ),
     Key([], "XF86AudioMute", lazy.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")),
-    # Key([], 'XF86AudioLowerVolume', lazy.spawn('pulseaudio-ctl down +5%')),
-    # Key([], 'XF86AudioRaiseVolume', lazy.spawn('pulseaudio-ctl up +5%')),
+    Key([], "XF86AudioLowerVolume", lazy.spawn("amixer sset Master 5%-")),
+    Key([], "XF86AudioRaiseVolume", lazy.spawn("amixer sset Master 5%+")),
     # Brightness
     Key([], "XF86MonBrightnessUp", lazy.spawn("brightnessctl set +5%")),
     Key([], "XF86MonBrightnessDown", lazy.spawn("brightnessctl set 5%-")),

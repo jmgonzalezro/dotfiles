@@ -154,12 +154,12 @@ require('lazy').setup({
     },
   },
   -- config =   },
-  {
-    'lukas-reineke/indent-blankline.nvim',
-    -- See `:help ibl`
-    main = 'ibl',
-    opts = {},
-  },
+  -- {
+  --   'lukas-reineke/indent-blankline.nvim',
+  --   -- See `:help ibl`
+  --   main = 'ibl',
+  --   opts = {},
+  -- },
   { 'numToStr/Comment.nvim', opts = {} },
   {
     'nvim-telescope/telescope.nvim',
