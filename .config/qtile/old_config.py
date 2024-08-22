@@ -136,15 +136,15 @@ for i in groups:
 
 widget_defaults = dict(
     font="sans",
-    fontsize=14,
-    padding=5,
+    fontsize=12,
+    padding=3,
 )
 extension_defaults = widget_defaults.copy()
 
 screens = [
     Screen(
-        # wallpaper="~/Images/m0bv61rf4im51.png",
-        # wallpaper_mode="fill",
+        wallpaper="~/Images/m0bv61rf4im51.png",
+        wallpaper_mode="fill",
         bottom=bar.Bar(
             [
                 widget.GroupBox(),
@@ -160,46 +160,13 @@ screens = [
                 widget.Net(
                     interface="wlan0",
                     format="   {down}",
-                    disconnected_message="󰖪 ",
                     prefix="k",
-                    mouse_callbacks={
-                        "Button1": lambda: qtile.cmd_spawn("nm-connection-editor")
-                    },
+                    fontsize=12,
+                    padding=5,
+                    mouse_callbacks={"Button1": lazy.spawn("networkmanager_dmenu")},
                 ),
-                widget.Volume(
-                    emoji=True,
-                    mute_format=" ",
-                    emoji_list=["  ", " ", " ", " "],
-                    mute_foreground="ff5733",
-                    mouse_callbacks={"Button1": lambda: qtile.cmd_spawn("pavucontrol")},
-                ),
-                widget.Volume(
-                    volume_app="PulseAudio Volume Control",
-                    mute_foreground="ff5733",
-                    fmt="{}",
-                    mouse_callbacks={"Button1": lambda: qtile.cmd_spawn("pavucontrol")},
-                ),
-                widget.Backlight(
-                    backlight_name="intel_backlight",
-                    format=" {percent:2.0%}",
-                ),
+                widget.Volume(),
                 widget.KeyboardLayout(configured_keyboards=["us", "es"]),
-                widget.LaunchBar(
-                    padding=0,
-                    text_only=True,
-                    font="Font Awesome 6 Free",
-                    fontsize=16,
-                    foreground="2e3440",
-                    progs=[
-                        ("", "rofi-bluetooth", "Bluetooth"),
-                    ],
-                ),
-                widget.Wallpaper(
-                    directory="~/Images",
-                    # wallpaper="~/Images/m0bv61rf4im51.png",
-                    label=" ",
-                    option="fill",
-                ),
                 widget.Battery(
                     low_foreground="#bf616a",
                     charge_char="󱊥 ",
@@ -210,7 +177,7 @@ screens = [
                     low_percentage=0.2,
                     format="{char} {percent:2.0%}",
                 ),
-                widget.Clock(format="%Y-%m-%d - %H:%M"),
+                widget.Clock(format="%Y-%m-%d - %I:%M %p"),
             ],
             24,
         ),
@@ -256,3 +223,13 @@ reconfigure_screens = True
 auto_minimize = True
 
 wl_input_rules = None
+
+wmname = "LG3D"
+
+wmname = "LG3D"
+
+wmname = "LG3D"
+
+wmname = "LG3D"
+
+wmname = "LG3D"
