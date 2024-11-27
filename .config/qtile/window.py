@@ -44,7 +44,7 @@ def kick_to_next_screen(qtile, direction=1):
         qtile.screens
     )
     othergroup = None
-    for group in qtile.cmd_groups().values():
+    for group in qtile.get_groups().values():
         if group["screen"] == other_scr_index:
             othergroup = group["name"]
             break
@@ -356,7 +356,7 @@ mouse = [
 @hook.subscribe.screen_change
 def restart_on_randr(qtile, ev):
     # TODO only if numbers of screens changed
-    qtile.cmd_restart()
+    qtile.restart()
 
 
 dgroups_key_binder = None

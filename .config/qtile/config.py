@@ -2,7 +2,10 @@ from libqtile import bar, layout, qtile, widget
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
 from libqtile.utils import guess_terminal
-from libqtile import qtile
+
+import os
+
+os.system("picom &")
 
 if qtile.core.name == "x11":
     term = "urxvt"
@@ -11,14 +14,31 @@ elif qtile.core.name == "wayland":
 mod = "mod4"
 
 
+def open_pavucontrol():
+    qtile.cmd_spawn("pavucontrol")
+
+
+def open_nm_connection_editor():
+    qtile.cmd_spawn("nm-connection-editor")
+
+
+def open_rofi_wifi_menu():
+    qtile.cmd_spawn("/home/jose/.local/bin/rofi-wifi-menu")
+
+
 terminal = guess_terminal()
 
 keys = [
-    Key([mod], "h", lazy.layout.left(), desc="Move focus to left"),
-    Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
-    Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
-    Key([mod], "k", lazy.layout.up(), desc="Move focus up"),
-    Key([mod], "space", lazy.layout.next(), desc="Move window focus to other window"),
+    # Key([mod], "h", lazy.layout.left(), desc="Move focus to left"),
+    # Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
+    # Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
+    # Key([mod], "k", lazy.layout.up(), desc="Move focus up"),
+    Key(
+        [mod, "control"],
+        "l",
+        lazy.group.next_window(),
+        desc="Move window focus to other window",
+    ),
     # Move windows between left/right columns or move up/down in current stack.
     # Moving out of range in Columns layout will create new column.
     Key(
@@ -34,7 +54,8 @@ keys = [
     Key([mod, "shift"], "k", lazy.layout.shuffle_up(), desc="Move window up"),
     # Grow windows. If current window is on the edge of screen and direction
     # will be to screen edge - window would shrink.
-    Key([mod, "control"], "h", lazy.layout.grow_left(), desc="Grow window to the left"),
+    Key([mod, "control"], "h", lazy.layout.grow_left(),
+        desc="Grow window to the left"),
     Key(
         [mod, "control"], "l", lazy.layout.grow_right(), desc="Grow window to the right"
     ),
@@ -79,7 +100,8 @@ keys = [
         lazy.widget["keyboardlayout"].next_keyboard(),
         desc="Next keyboard layout",
     ),
-    Key([], "XF86AudioMute", lazy.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")),
+    Key([], "XF86AudioMute", lazy.spawn(
+        "pactl set-sink-mute @DEFAULT_SINK@ toggle")),
     Key([], "XF86AudioLowerVolume", lazy.spawn("amixer sset Master 5%-")),
     Key([], "XF86AudioRaiseVolume", lazy.spawn("amixer sset Master 5%+")),
     # Brightness
@@ -101,7 +123,8 @@ for vt in range(1, 8):
         Key(
             ["control", "mod1"],
             f"f{vt}",
-            lazy.core.change_vt(vt).when(func=lambda: qtile.core.name == "wayland"),
+            lazy.core.change_vt(vt).when(
+                func=lambda: qtile.core.name == "wayland"),
             desc=f"Switch to VT{vt}",
         )
     )
@@ -124,7 +147,8 @@ for i in groups:
                 [mod, "shift"],
                 i.name,
                 lazy.window.togroup(i.name, switch_group=True),
-                desc="Switch to & move focused window to group {}".format(i.name),
+                desc="Switch to & move focused window to group {}".format(
+                    i.name),
             ),
             # Or, use below if you prefer not to switch to that group.
             # # mod1 + shift + group number = move focused window to group
@@ -163,7 +187,8 @@ screens = [
                     disconnected_message="󰖪 ",
                     prefix="k",
                     mouse_callbacks={
-                        "Button1": lambda: qtile.cmd_spawn("nm-connection-editor")
+                        "Button1": open_rofi_wifi_menu,
+                        "Button3": open_nm_connection_editor,
                     },
                 ),
                 widget.Volume(
@@ -171,13 +196,13 @@ screens = [
                     mute_format=" ",
                     emoji_list=["  ", " ", " ", " "],
                     mute_foreground="ff5733",
-                    mouse_callbacks={"Button1": lambda: qtile.cmd_spawn("pavucontrol")},
+                    mouse_callbacks={"Button1": open_pavucontrol},
                 ),
                 widget.Volume(
                     volume_app="PulseAudio Volume Control",
                     mute_foreground="ff5733",
                     fmt="{}",
-                    mouse_callbacks={"Button1": lambda: qtile.cmd_spawn("pavucontrol")},
+                    mouse_callbacks={"Button1": open_pavucontrol},
                 ),
                 widget.Backlight(
                     backlight_name="intel_backlight",
@@ -194,6 +219,7 @@ screens = [
                         ("", "rofi-bluetooth", "Bluetooth"),
                     ],
                 ),
+                widget.Bluetooth(),
                 widget.Wallpaper(
                     directory="~/Images",
                     # wallpaper="~/Images/m0bv61rf4im51.png",

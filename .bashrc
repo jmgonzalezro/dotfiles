@@ -130,6 +130,9 @@ fi
 # ssh
 export SSH_KEY_PATH="~/.ssh/rsa_id"
 
+# paths
+export PATH="$HOME/.local/bin:$PATH"
+
 # Set personal aliases, overriding those provided by oh-my-bash libs,
 # plugins, and themes. Aliases can be placed here, though oh-my-bash
 # users are encouraged to define aliases within the OSH_CUSTOM folder.
