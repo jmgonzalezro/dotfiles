@@ -29,10 +29,10 @@ def open_rofi_wifi_menu():
 terminal = guess_terminal()
 
 keys = [
-    # Key([mod], "h", lazy.layout.left(), desc="Move focus to left"),
-    # Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
-    # Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
-    # Key([mod], "k", lazy.layout.up(), desc="Move focus up"),
+    Key([mod], "h", lazy.layout.left(), desc="Move focus to left"),
+    Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
+    Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
+    Key([mod], "k", lazy.layout.up(), desc="Move focus up"),
     Key(
         [mod, "control"],
         "l",
@@ -167,8 +167,6 @@ extension_defaults = widget_defaults.copy()
 
 screens = [
     Screen(
-        # wallpaper="~/Images/m0bv61rf4im51.png",
-        # wallpaper_mode="fill",
         bottom=bar.Bar(
             [
                 widget.GroupBox(),
@@ -186,6 +184,8 @@ screens = [
                     format="   {down}",
                     disconnected_message="󰖪 ",
                     prefix="k",
+                    fontsize=16,
+                    width=60,
                     mouse_callbacks={
                         "Button1": open_rofi_wifi_menu,
                         "Button3": open_nm_connection_editor,
@@ -193,19 +193,24 @@ screens = [
                 ),
                 widget.Volume(
                     emoji=True,
+                    volume_app="PulseAudio Volume Control",
                     mute_format=" ",
-                    emoji_list=["  ", " ", " ", " "],
+                    emoji_list=["", "", "", "", " "],
                     mute_foreground="ff5733",
+                    fontsize=16,
+                    width=25,
                     mouse_callbacks={"Button1": open_pavucontrol},
                 ),
                 widget.Volume(
                     volume_app="PulseAudio Volume Control",
                     mute_foreground="ff5733",
                     fmt="{}",
+                    fontsize=16,
                     mouse_callbacks={"Button1": open_pavucontrol},
                 ),
                 widget.Backlight(
                     backlight_name="intel_backlight",
+                    fontsize=16,
                     format=" {percent:2.0%}",
                 ),
                 widget.KeyboardLayout(configured_keyboards=["us", "es"]),
@@ -214,16 +219,18 @@ screens = [
                     text_only=True,
                     font="Font Awesome 6 Free",
                     fontsize=16,
-                    foreground="2e3440",
+                    foreground="#ffffff",
                     progs=[
-                        ("", "rofi-bluetooth", "Bluetooth"),
+                        ("", "bluetui", "Bluetooth"),
                     ],
+                    mouse_callbacks={"Button1": lazy.spawn(
+                        "alacritty -e bluetui")},
+                    width=40,
                 ),
-                widget.Bluetooth(),
                 widget.Wallpaper(
                     directory="~/Images",
-                    # wallpaper="~/Images/m0bv61rf4im51.png",
                     label=" ",
+                    fontsize=16,
                     option="fill",
                 ),
                 widget.Battery(
@@ -234,9 +241,13 @@ screens = [
                     empty_char="󱃍 ",
                     hide_threshold=0.99,
                     low_percentage=0.2,
+                    fontsize=16,
                     format="{char} {percent:2.0%}",
                 ),
-                widget.Clock(format="%Y-%m-%d - %H:%M"),
+                widget.Clock(
+                    format="%Y-%m-%d - %H:%M",
+                    fontsize=16,
+                ),
             ],
             24,
         ),
