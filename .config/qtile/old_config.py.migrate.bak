@@ -2,28 +2,13 @@ from libqtile import bar, layout, qtile, widget
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
 from libqtile.utils import guess_terminal
-
-import os
-
-os.system("picom &")
+from libqtile import qtile
 
 if qtile.core.name == "x11":
     term = "urxvt"
 elif qtile.core.name == "wayland":
     term = "foot"
 mod = "mod4"
-
-
-def open_pavucontrol():
-    qtile.cmd_spawn("pavucontrol")
-
-
-def open_nm_connection_editor():
-    qtile.cmd_spawn("nm-connection-editor")
-
-
-def open_rofi_wifi_menu():
-    qtile.cmd_spawn("/home/jose/.local/bin/rofi-wifi-menu")
 
 
 terminal = guess_terminal()
@@ -33,12 +18,7 @@ keys = [
     Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
     Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
     Key([mod], "k", lazy.layout.up(), desc="Move focus up"),
-    Key(
-        [mod, "control"],
-        "l",
-        lazy.group.next_window(),
-        desc="Move window focus to other window",
-    ),
+    Key([mod], "space", lazy.layout.next(), desc="Move window focus to other window"),
     # Move windows between left/right columns or move up/down in current stack.
     # Moving out of range in Columns layout will create new column.
     Key(
@@ -54,8 +34,7 @@ keys = [
     Key([mod, "shift"], "k", lazy.layout.shuffle_up(), desc="Move window up"),
     # Grow windows. If current window is on the edge of screen and direction
     # will be to screen edge - window would shrink.
-    Key([mod, "control"], "h", lazy.layout.grow_left(),
-        desc="Grow window to the left"),
+    Key([mod, "control"], "h", lazy.layout.grow_left(), desc="Grow window to the left"),
     Key(
         [mod, "control"], "l", lazy.layout.grow_right(), desc="Grow window to the right"
     ),
@@ -100,8 +79,7 @@ keys = [
         lazy.widget["keyboardlayout"].next_keyboard(),
         desc="Next keyboard layout",
     ),
-    Key([], "XF86AudioMute", lazy.spawn(
-        "pactl set-sink-mute @DEFAULT_SINK@ toggle")),
+    Key([], "XF86AudioMute", lazy.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")),
     Key([], "XF86AudioLowerVolume", lazy.spawn("amixer sset Master 5%-")),
     Key([], "XF86AudioRaiseVolume", lazy.spawn("amixer sset Master 5%+")),
     # Brightness
@@ -113,11 +91,6 @@ keys = [
         "Print",
         lazy.spawn("scrot /home/jose/Images/%Y-%m-%d-%T-screenshot.png"),
     ),
-    Key(
-        [mod, 'control'],
-        "Print",
-        lazy.spawn("scrot -s /home/jose/Images/%Y-%m-%d-%T-screenshot.png"),
-    ),
 ]
 
 # Add key bindings to switch VTs in Wayland.
@@ -128,14 +101,13 @@ for vt in range(1, 8):
         Key(
             ["control", "mod1"],
             f"f{vt}",
-            lazy.core.change_vt(vt).when(
-                func=lambda: qtile.core.name == "wayland"),
+            lazy.core.change_vt(vt).when(func=lambda: qtile.core.name == "wayland"),
             desc=f"Switch to VT{vt}",
         )
     )
 
 
-groups = [Group(i) for i in "qwerty"]
+groups = [Group(i) for i in "12345"]
 
 for i in groups:
     keys.extend(
@@ -152,8 +124,7 @@ for i in groups:
                 [mod, "shift"],
                 i.name,
                 lazy.window.togroup(i.name, switch_group=True),
-                desc="Switch to & move focused window to group {}".format(
-                    i.name),
+                desc="Switch to & move focused window to group {}".format(i.name),
             ),
             # Or, use below if you prefer not to switch to that group.
             # # mod1 + shift + group number = move focused window to group
@@ -165,13 +136,15 @@ for i in groups:
 
 widget_defaults = dict(
     font="sans",
-    fontsize=14,
-    padding=5,
+    fontsize=12,
+    padding=3,
 )
 extension_defaults = widget_defaults.copy()
 
 screens = [
     Screen(
+        wallpaper="~/Images/m0bv61rf4im51.png",
+        wallpaper_mode="fill",
         bottom=bar.Bar(
             [
                 widget.GroupBox(),
@@ -187,57 +160,13 @@ screens = [
                 widget.Net(
                     interface="wlan0",
                     format="   {down}",
-                    disconnected_message="󰖪 ",
                     prefix="k",
-                    fontsize=16,
-                    width=60,
-                    mouse_callbacks={
-                        "Button1": open_rofi_wifi_menu,
-                        "Button3": open_nm_connection_editor,
-                    },
+                    fontsize=12,
+                    padding=5,
+                    mouse_callbacks={"Button1": lazy.spawn("networkmanager_dmenu")},
                 ),
-                widget.Volume(
-                    emoji=True,
-                    volume_app="PulseAudio Volume Control",
-                    mute_format=" ",
-                    emoji_list=["", "", "", "", " "],
-                    mute_foreground="ff5733",
-                    fontsize=16,
-                    width=25,
-                    mouse_callbacks={"Button1": open_pavucontrol},
-                ),
-                widget.Volume(
-                    volume_app="PulseAudio Volume Control",
-                    mute_foreground="ff5733",
-                    fmt="{}",
-                    fontsize=16,
-                    mouse_callbacks={"Button1": open_pavucontrol},
-                ),
-                widget.Backlight(
-                    backlight_name="intel_backlight",
-                    fontsize=16,
-                    format=" {percent:2.0%}",
-                ),
+                widget.Volume(),
                 widget.KeyboardLayout(configured_keyboards=["us", "es"]),
-                widget.LaunchBar(
-                    padding=0,
-                    text_only=True,
-                    font="Font Awesome 6 Free",
-                    fontsize=16,
-                    foreground="#ffffff",
-                    progs=[
-                        ("", "bluetui", "Bluetooth"),
-                    ],
-                    mouse_callbacks={"Button1": lazy.spawn(
-                        "alacritty -e bluetui")},
-                    width=40,
-                ),
-                widget.Wallpaper(
-                    directory="~/Images",
-                    label=" ",
-                    fontsize=16,
-                    option="fill",
-                ),
                 widget.Battery(
                     low_foreground="#bf616a",
                     charge_char="󱊥 ",
@@ -246,13 +175,9 @@ screens = [
                     empty_char="󱃍 ",
                     hide_threshold=0.99,
                     low_percentage=0.2,
-                    fontsize=16,
                     format="{char} {percent:2.0%}",
                 ),
-                widget.Clock(
-                    format="%Y-%m-%d - %H:%M",
-                    fontsize=16,
-                ),
+                widget.Clock(format="%Y-%m-%d - %I:%M %p"),
             ],
             24,
         ),
@@ -298,3 +223,13 @@ reconfigure_screens = True
 auto_minimize = True
 
 wl_input_rules = None
+
+wmname = "LG3D"
+
+wmname = "LG3D"
+
+wmname = "LG3D"
+
+wmname = "LG3D"
+
+wmname = "LG3D"
