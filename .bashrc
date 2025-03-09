@@ -149,3 +149,6 @@ alias pyvc='python -m venv venv; pyv'
 # Qtyle
 alias qconf='nvim /home/jose/.config/qtile/config.py'
 . "$HOME/.cargo/env"
+
+# FZF
+alias fzd='cd $(dirname $(fzf))'

@@ -1,7 +1,8 @@
 from libqtile import bar, layout, qtile, widget
-from libqtile.config import Click, Drag, Group, Key, Match, Screen
+from libqtile.config import Click, Drag, Group, Key, Match, Screen, ScratchPad, DropDown
 from libqtile.lazy import lazy
 from libqtile.utils import guess_terminal
+from qtile_extras import widget as widget_extras
 
 import os
 
@@ -135,7 +136,7 @@ for vt in range(1, 8):
     )
 
 
-groups = [Group(i) for i in "qwerty"]
+groups = [Group(i) for i in "12345"]
 
 for i in groups:
     keys.extend(
@@ -155,13 +156,17 @@ for i in groups:
                 desc="Switch to & move focused window to group {}".format(
                     i.name),
             ),
-            # Or, use below if you prefer not to switch to that group.
             # # mod1 + shift + group number = move focused window to group
-            # Key([mod, "shift"], i.name, lazy.window.togroup(i.name),
-            #     desc="move focused window to group {}".format(i.name)),
+            Key([mod, "control"], i.name, lazy.window.togroup(i.name),
+                desc="move focused window to group {}".format(i.name)),
         ]
     )
 
+groups.append(
+    ScratchPad("scratchpad", [
+        DropDown("pavucontrol", "pavucontrol", width=0.8, height=0.8, x=0.1, y=0.1, opacity=0.9),
+    ])
+)
 
 widget_defaults = dict(
     font="sans",
@@ -184,18 +189,6 @@ screens = [
                     name_transform=lambda name: name.upper(),
                 ),
                 widget.Systray(),
-                widget.Net(
-                    interface="wlan0",
-                    format="   {down}",
-                    disconnected_message="󰖪 ",
-                    prefix="k",
-                    fontsize=16,
-                    width=60,
-                    mouse_callbacks={
-                        "Button1": open_rofi_wifi_menu,
-                        "Button3": open_nm_connection_editor,
-                    },
-                ),
                 widget.Volume(
                     emoji=True,
                     volume_app="PulseAudio Volume Control",
@@ -204,33 +197,30 @@ screens = [
                     mute_foreground="ff5733",
                     fontsize=16,
                     width=25,
-                    mouse_callbacks={"Button1": open_pavucontrol},
+                    mouse_callbacks={"Button1": lazy.group["scratchpad"].dropdown_toggle("pavucontrol")},
                 ),
                 widget.Volume(
                     volume_app="PulseAudio Volume Control",
                     mute_foreground="ff5733",
                     fmt="{}",
                     fontsize=16,
-                    mouse_callbacks={"Button1": open_pavucontrol},
+                    mouse_callbacks={"Button1": lazy.group["scratchpad"].dropdown_toggle("pavucontrol")},
                 ),
                 widget.Backlight(
                     backlight_name="intel_backlight",
                     fontsize=16,
                     format=" {percent:2.0%}",
                 ),
+                widget_extras.WiFiIcon(
+                    mouse_callbacks={
+                        "Button3": open_nm_connection_editor,
+                    },
+                    wifi_arc=90,
+                ),
                 widget.KeyboardLayout(configured_keyboards=["us", "es"]),
-                widget.LaunchBar(
-                    padding=0,
-                    text_only=True,
-                    font="Font Awesome 6 Free",
+                widget_extras.Bluetooth(
+                    default_text="",
                     fontsize=16,
-                    foreground="#ffffff",
-                    progs=[
-                        ("", "bluetui", "Bluetooth"),
-                    ],
-                    mouse_callbacks={"Button1": lazy.spawn(
-                        "alacritty -e bluetui")},
-                    width=40,
                 ),
                 widget.Wallpaper(
                     directory="~/Images",
@@ -238,20 +228,18 @@ screens = [
                     fontsize=16,
                     option="fill",
                 ),
-                widget.Battery(
-                    low_foreground="#bf616a",
-                    charge_char="󱊥 ",
-                    discharge_char="󱊢 ",
-                    full_char="󱊦 ",
-                    empty_char="󱃍 ",
-                    hide_threshold=0.99,
-                    low_percentage=0.2,
-                    fontsize=16,
-                    format="{char} {percent:2.0%}",
+                widget_extras.UPowerWidget(
+                    battery_height=10,
+                    fill_critical='cc0000',
+                    fill_low='aa00aa',
+                    percentage_low=0.2,
+                    percentage_critical=0.1,
+                    spacing=5,
                 ),
                 widget.Clock(
                     format="%Y-%m-%d - %H:%M",
                     fontsize=16,
+                    mouse_callbacks={'Button1': lazy.spawn("khal interactive")}
                 ),
             ],
             24,
