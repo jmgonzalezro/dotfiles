@@ -1,12 +1,15 @@
 from libqtile import bar, layout, qtile, widget
 from libqtile.config import Click, Drag, Group, Key, Match, Screen, ScratchPad, DropDown
 from libqtile.lazy import lazy
-from libqtile.utils import guess_terminal
+from libqtile.utils import guess_terminal, send_notification
+
 from qtile_extras import widget as widget_extras
+import qtile_extras.hook
 
 import os
 
 os.system("picom &")
+os.system("dunst &") 
 
 if qtile.core.name == "x11":
     term = "urxvt"
@@ -25,6 +28,31 @@ def open_nm_connection_editor():
 
 def open_rofi_wifi_menu():
     qtile.cmd_spawn("/home/jose/.local/bin/rofi-wifi-menu")
+
+
+@qtile_extras.hook.subscribe.up_battery_critical
+def battery_critical(battery_name):
+    qtile.spawn('notify-send "Battery is critical" -u "critical"')
+
+
+@qtile_extras.hook.subscribe.up_battery_full
+def battery_full(battery_name):
+    qtile.spawn('notify-send "Battery is fully charged" -u "low"')
+
+
+@qtile_extras.hook.subscribe.up_battery_low
+def battery_low(battery_name):
+    qtile.spawn("notify-send 'Battery is running low' -u 'normal'")
+
+
+@qtile_extras.hook.subscribe.up_power_connected
+def battery_low(battery_name):
+    qtile.spawn("notify-send 'Battery is connected' -u 'low'")
+
+
+@qtile_extras.hook.subscribe.up_power_disconnected
+def battery_low(battery_name):
+    qtile.spawn("notify-send 'Battery is disconnected' -u 'normal'")
 
 
 terminal = guess_terminal()
@@ -211,7 +239,8 @@ screens = [
                     fontsize=16,
                     format=" {percent:2.0%}",
                 ),
-                widget_extras.WiFiIcon(
+                # widget_extras.WiFiIcon(
+                qtile_extras.widget.WiFiIcon(
                     mouse_callbacks={
                         "Button3": open_nm_connection_editor,
                     },
@@ -228,7 +257,8 @@ screens = [
                     fontsize=16,
                     option="fill",
                 ),
-                widget_extras.UPowerWidget(
+                # widget_extras.UPowerWidget(
+                qtile_extras.widget.UPowerWidget(
                     battery_height=10,
                     fill_critical='cc0000',
                     fill_low='aa00aa',
