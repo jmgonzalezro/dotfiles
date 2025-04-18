@@ -18,6 +18,14 @@ elif qtile.core.name == "wayland":
 mod = "mod4"
 
 
+def open_calendar(qtile):
+    qtile.cmd_spawn('gsimplecal')
+
+
+def close_calendar(qtile):
+    qtile.cmd_spawn('killall -q gsimplecal')
+
+
 def open_pavucontrol():
     qtile.cmd_spawn("pavucontrol")
 
@@ -37,7 +45,9 @@ def battery_critical(battery_name):
 
 @qtile_extras.hook.subscribe.up_battery_full
 def battery_full(battery_name):
-    qtile.spawn('notify-send "Battery is fully charged" -u "low"')
+    battery_status = os.popen(f"upower -i $(upower -e | grep {battery_name}) | grep state").read()
+    if "fully-charged" in battery_status:
+        qtile.spawn('notify-send "Battery is fully charged" -u "low"')
 
 
 @qtile_extras.hook.subscribe.up_battery_low
@@ -46,13 +56,17 @@ def battery_low(battery_name):
 
 
 @qtile_extras.hook.subscribe.up_power_connected
-def battery_low(battery_name):
-    qtile.spawn("notify-send 'Battery is connected' -u 'low'")
+def plugged_in():
+    qtile.spawn("notify-send 'Battery is connected' -u 'normal'")
+    qtile.spawn("paplay ~/Downloads/Thip.ogg")
 
 
 @qtile_extras.hook.subscribe.up_power_disconnected
-def battery_low(battery_name):
+def unplugged():
     qtile.spawn("notify-send 'Battery is disconnected' -u 'normal'")
+    qtile.spawn("paplay ~/Downloads/Thip.ogg")
+    # qtile.spawn("ffplay power_off.wav")
+
 
 
 terminal = guess_terminal()
@@ -190,11 +204,11 @@ for i in groups:
         ]
     )
 
-groups.append(
-    ScratchPad("scratchpad", [
-        DropDown("pavucontrol", "pavucontrol", width=0.8, height=0.8, x=0.1, y=0.1, opacity=0.9),
-    ])
-)
+# groups.append(
+#     ScratchPad("scratchpad", [
+#         DropDown("pavucontrol", "pavucontrol", width=0.8, height=0.8, x=0.1, y=0.1, opacity=0.9),
+#     ])
+# )
 
 widget_defaults = dict(
     font="sans",
@@ -225,21 +239,20 @@ screens = [
                     mute_foreground="ff5733",
                     fontsize=16,
                     width=25,
-                    mouse_callbacks={"Button1": lazy.group["scratchpad"].dropdown_toggle("pavucontrol")},
+                    mouse_callbacks={"Button1": open_pavucontrol},
                 ),
                 widget.Volume(
                     volume_app="PulseAudio Volume Control",
                     mute_foreground="ff5733",
                     fmt="{}",
                     fontsize=16,
-                    mouse_callbacks={"Button1": lazy.group["scratchpad"].dropdown_toggle("pavucontrol")},
+                    mouse_callbacks={"Button1": open_pavucontrol},
                 ),
                 widget.Backlight(
                     backlight_name="intel_backlight",
                     fontsize=16,
                     format=" {percent:2.0%}",
                 ),
-                # widget_extras.WiFiIcon(
                 qtile_extras.widget.WiFiIcon(
                     mouse_callbacks={
                         "Button3": open_nm_connection_editor,
@@ -252,10 +265,11 @@ screens = [
                     fontsize=16,
                 ),
                 widget.Wallpaper(
-                    directory="~/Images",
+                    directory="~/Images/wallpapers/",
                     label=" ",
                     fontsize=16,
                     option="fill",
+                    random_selection=True,
                 ),
                 # widget_extras.UPowerWidget(
                 qtile_extras.widget.UPowerWidget(
@@ -269,7 +283,7 @@ screens = [
                 widget.Clock(
                     format="%Y-%m-%d - %H:%M",
                     fontsize=16,
-                    mouse_callbacks={'Button1': lazy.spawn("khal interactive")}
+                    mouse_callbacks={'Button1': lambda: qtile.cmd_spawn('gsimplecal')},
                 ),
             ],
             24,
