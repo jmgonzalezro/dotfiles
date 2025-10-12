@@ -1,6 +1,6 @@
 configuration {
 	modi:				"drun";
-	font:				"monospace 10";
+	font:				"Hack 12";
 	show-icons:                     true;
 	icon-theme: 			"Nord-Icon";
 	display-drun: 			"";
@@ -8,7 +8,7 @@ configuration {
 	sidebar-mode: 			false;
 }
 
-@theme "/dev/null"
+//@theme "/dev/null"
 
 * {
 	bg:				#2e3440;
@@ -102,3 +102,25 @@ element selected {
         border-color:                   @accent;
     	border-radius:                  6px;
 }
+
+//@theme "/usr/share/rofi/themes/android_notification.rasi"
+
+//@theme "/usr/share/rofi/themes/Arc-Dark.rasi"
+
+//@theme "/usr/share/rofi/themes/DarkBlue.rasi"
+
+//@theme "/usr/share/rofi/themes/gruvbox-dark.rasi"
+
+//@theme "/usr/share/rofi/themes/Adapta-Nokto.rasi"
+
+//@theme "/usr/share/rofi/themes/Arc-Dark.rasi"
+
+//@theme "/usr/share/rofi/themes/Arc-Dark.rasi"
+
+//@theme "/usr/share/rofi/themes/sidebar.rasi"
+
+//@theme "/usr/share/rofi/themes/arthur.rasi"
+
+//@theme "/usr/share/rofi/themes/paper-float.rasi"
+
+@theme "/usr/share/rofi/themes/sidebar.rasi"

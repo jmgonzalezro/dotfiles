@@ -152,3 +152,7 @@ alias qconf='nvim /home/jose/.config/qtile/config.py'
 
 # FZF
 alias fzd='cd $(dirname $(fzf))'
+
+# Tmux-Sessionizer
+PATH="$PATH":"$HOME/.local/scripts/"
+bind '"\C-f":"tmux-sessionizer\n"'
