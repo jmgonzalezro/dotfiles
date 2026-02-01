@@ -21,23 +21,23 @@ mod = "mod4"
 
 
 def open_calendar(qtile):
-    qtile.cmd_spawn('gsimplecal')
+    qtile.spawn('gsimplecal')
 
 
 def close_calendar(qtile):
-    qtile.cmd_spawn('killall -q gsimplecal')
+    qtile.spawn('killall -q gsimplecal')
 
 
 def open_pavucontrol():
-    qtile.cmd_spawn("pavucontrol")
+    qtile.spawn("pavucontrol")
 
 
 def open_nm_connection_editor():
-    qtile.cmd_spawn("nm-connection-editor")
+    qtile.spawn("nm-connection-editor")
 
 
 def open_rofi_wifi_menu():
-    qtile.cmd_spawn("/home/jose/.local/bin/rofi-wifi-menu")
+    qtile.spawn("/home/jose/.local/bin/rofi-wifi-menu")
 
 
 @qtile_extras.hook.subscribe.up_battery_critical
@@ -245,7 +245,7 @@ screens = [
                 widget.Clock(
                     format="%Y-%m-%d - %H:%M",
                     fontsize=16,
-                    mouse_callbacks={'Button1': lambda: qtile.cmd_spawn('gsimplecal')},
+                    mouse_callbacks={'Button1': lambda: qtile.spawn('gsimplecal')},
                 ),
             ],
             24,

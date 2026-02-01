@@ -133,6 +133,9 @@ export SSH_KEY_PATH="~/.ssh/rsa_id"
 # paths
 export PATH="$HOME/.local/bin:$PATH"
 
+# Podman
+export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/podman/podman.sock
+
 # Set personal aliases, overriding those provided by oh-my-bash libs,
 # plugins, and themes. Aliases can be placed here, though oh-my-bash
 # users are encouraged to define aliases within the OSH_CUSTOM folder.
