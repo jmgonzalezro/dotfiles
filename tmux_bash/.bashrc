@@ -117,6 +117,11 @@ source "$OSH"/oh-my-bash.sh
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
 
+# Variables para Wayland
+export XDG_SESSION_TYPE=wayland
+export XDG_CURRENT_DESKTOP=Qtile
+export WLR_NO_HARDWARE_CURSORS=1  # Vital si la pantalla se queda negra o no ves el cursor
+
 # Preferred editor for local and remote sessions
 if [[ -n $SSH_CONNECTION ]]; then
   export EDITOR='nvim'
@@ -155,6 +160,29 @@ alias qconf='nvim /home/jose/.config/qtile/config.py'
 
 # FZF
 alias fzd='cd $(dirname $(fzf))'
+
+# navigation with fzf
+fnav() {
+  local target
+  target=$(fzf)
+
+  if [ -n "$target" ]; then
+    if [ -d "$target" ]; then
+      # Si es un directorio, entramos en él
+      cd "$target" || return
+      echo "Cambiado a: $PWD"
+    elif [ -f "$target" ]; then
+      # Si es un archivo, lo abrimos con Neovim
+      nvim "$target"
+    else
+      echo "Error: No se puede procesar el destino."
+    fi
+  fi
+}
+
+# Alias corto para invocar la función
+alias fzn='fnav'
+
 
 # Tmux-Sessionizer
 PATH="$PATH":"$HOME/.local/scripts/"

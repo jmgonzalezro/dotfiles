@@ -52,7 +52,7 @@ blinking = "on"
 shape = "Block"
 
 [env]
-TERM = "screen-256color"
+TERM = "alacritty"
 WINIT_X11_SCALE_FACTOR = "1.0"
 
 [font]
