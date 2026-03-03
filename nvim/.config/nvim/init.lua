@@ -122,24 +122,24 @@ require('lazy').setup({
       require("copilot_cmp").setup()
     end
   },
-  -- {
-  --   "olimorris/codecompanion.nvim",
-  --   dependencies = {
-  --     "nvim-lua/plenary.nvim",
-  --     "nvim-treesitter/nvim-treesitter",
-  --     { "MeanderingProgrammer/render-markdown.nvim", ft = { "markdown", "codecompanion" } },
-  --   },
-  --   config = function()
-  --     require("codecompanion").setup({
-  --       edit = {
-  --         enable = true,
-  --       },
-  --     })
-  --   end,
-  --   strategies = {
-  --     chat = { adapter = 'copilot' },
-  --   },
-  -- },
+  {
+    "olimorris/codecompanion.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+      { "MeanderingProgrammer/render-markdown.nvim", ft = { "markdown", "codecompanion" } },
+    },
+    config = function()
+      require("codecompanion").setup({
+        edit = {
+          enable = true,
+        },
+      })
+    end,
+    strategies = {
+      chat = { adapter = 'copilot' },
+    },
+  },
   {
     "folke/todo-comments.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },

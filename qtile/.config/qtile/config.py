@@ -17,8 +17,8 @@ def autostart():
     
     # Lista de aplicaciones que quieres lanzar en autostart
     processes = [
-        ['picom', '&'],
-        ['dunst', '&'],
+        ['picom', '--config', os.path.expanduser('~/.config/picom.conf')],
+        ['dunst'],
         ['libinput-gestures-setup', 'restart'],
         # ['feh', '--bg-fill', '/ruta/a/tu/wallpaper.jpg'], # Ejemplo para fondo de pantalla
     ]
