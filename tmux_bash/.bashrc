@@ -123,7 +123,7 @@ export XDG_CURRENT_DESKTOP=Qtile
 export WLR_NO_HARDWARE_CURSORS=1  # Vital si la pantalla se queda negra o no ves el cursor
 
 # Preferred editor for local and remote sessions
-if [[ -n $SSH_CONNECTION ]]; then
+if command -v nvim &>/dev/null; then
   export EDITOR='nvim'
 else
   export EDITOR='vim'
@@ -168,14 +168,12 @@ fnav() {
 
   if [ -n "$target" ]; then
     if [ -d "$target" ]; then
-      # Si es un directorio, entramos en él
       cd "$target" || return
-      echo "Cambiado a: $PWD"
+      echo "Changing Directory to: $PWD"
     elif [ -f "$target" ]; then
-      # Si es un archivo, lo abrimos con Neovim
       nvim "$target"
     else
-      echo "Error: No se puede procesar el destino."
+      echo "Error: Target is neither a file nor a directory."
     fi
   fi
 }
