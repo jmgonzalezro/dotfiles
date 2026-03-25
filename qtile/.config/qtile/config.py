@@ -1,4 +1,5 @@
 from libqtile import bar, layout, qtile, widget
+from libqtile.layout import TreeTab
 from libqtile.config import Click, Drag, Group, Key, Match, Screen, ScratchPad, DropDown
 from libqtile.lazy import lazy
 
@@ -9,6 +10,11 @@ import os
 
 import subprocess
 from libqtile import hook
+
+
+terminal = 'alacritty'
+term_with_tmux = f"{terminal} -e tmux"
+mod = "mod4"
 
 
 @hook.subscribe.startup_once
@@ -25,18 +31,6 @@ def autostart():
 
     for p in processes:
         subprocess.Popen(p)
-
-terminal = 'alacritty'
-term_with_tmux = f"{terminal} -e tmux"
-mod = "mod4"
-
-
-def open_calendar(qtile):
-    qtile.spawn('gsimplecal')
-
-
-def close_calendar(qtile):
-    qtile.spawn('killall -q gsimplecal')
 
 
 def open_pavucontrol():
@@ -83,8 +77,10 @@ def unplugged():
     # qtile.spawn("ffplay power_off.wav")
 
 
-
 keys = [
+    # change focus between monitors
+    Key([mod], "q", lazy.to_screen(0)),
+    Key([mod], "e", lazy.to_screen(1)),
     Key([mod], "h", lazy.layout.left(), desc="Move focus to left"),
     Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
     Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
@@ -181,12 +177,20 @@ groups.append(
                  width=0.5, 
                  x=0.25, y=0.25, 
                  on_focus_lost_hide=True),
-        
+
         DropDown("term", "alacritty", 
                  opacity=0.9, 
                  height=0.7, 
                  width=0.7, 
                  x=0.15, y=0.15),
+
+        # Calcurse -> www.calcurse.org
+        DropDown("calendar", "alacritty -e calcurse",
+                 opacity=0.95,
+                 height=0.5,
+                 width=0.5,
+                 x=0.25, y=0.25,
+                 on_focus_lost_hide=True),
     ])
 )
 
@@ -214,7 +218,9 @@ screens = [
                 widget.Clock(
                     format="%Y-%m-%d - %H:%M",
                     fontsize=16,
-                    mouse_callbacks={'Button1': lambda: qtile.spawn('gsimplecal')},
+                    mouse_callbacks={
+                        "Button1": lazy.group["scratchpad"].dropdown_toggle("calendar")
+                    },
                 ),
                 widget.Spacer(),
                 widget.Volume(

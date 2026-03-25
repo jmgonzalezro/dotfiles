@@ -151,8 +151,17 @@ alias bashrc="nvim ~/.bashrc"
 alias ohmybash="nvim ~/.oh-my-bash"
 
 # Python
-alias pyv='source ./venv/bin/activate'
-alias pyvc='python -m venv venv; pyv'
+pyv() {
+    if [ -f "./venv/bin/activate" ]; then
+        source ./venv/bin/activate
+    elif [ -f "./.venv/bin/activate" ]; then
+        source ./.venv/bin/activate
+    else
+        echo "No se encontró ningún entorno virtual en ./venv ni en ./.venv"
+    fi
+}
+
+alias pyvc='python -m venv .venv; pyv'
 
 # Qtyle
 alias qconf='nvim /home/jose/.config/qtile/config.py'
