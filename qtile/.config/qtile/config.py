@@ -1,284 +1,310 @@
-from libqtile import bar, layout, qtile, widget
-from libqtile.layout import TreeTab
-from libqtile.config import Click, Drag, Group, Key, Match, Screen, ScratchPad, DropDown
-from libqtile.lazy import lazy
-
-from qtile_extras import widget as widget_extras
-import qtile_extras.hook as qhook
+# Qtile config — minimal, hacker style
+# Docs: https://docs.qtile.org/
 
 import os
-
+import shlex
 import subprocess
-from libqtile import hook
 
+from libqtile import bar, hook, layout, qtile, widget
+from libqtile.config import (
+    Click,
+    Drag,
+    DropDown,
+    Group,
+    Key,
+    Match,
+    Rule,
+    ScratchPad,
+    Screen,
+)
+from libqtile.lazy import lazy
 
-terminal = 'alacritty'
-term_with_tmux = f"{terminal} -e tmux"
+terminal = "alacritty"
 mod = "mod4"
+HOME = os.path.expanduser
+
+# ── Paleta monocroma ───────────────────────────────────────────────────
+colors = {
+    "bg": "#0a0a0a",
+    "fg": "#e6e6e6",
+    "dim": "#5c5c5c",
+    "border_normal": "#262626",
+    "urgent": "#ff0000",
+}
 
 
+# ── Arranque (solo una vez por sesión) ─────────────────────────────────
 @hook.subscribe.startup_once
 def autostart():
-    # home = os.path.expanduser('~/.config/qtile/autostart.sh') # Opcional: usar un script externo
-    
-    # Lista de aplicaciones que quieres lanzar en autostart
-    processes = [
-        ['picom', '--config', os.path.expanduser('~/.config/picom.conf')],
-        ['dunst'],
-        ['libinput-gestures-setup', 'restart'],
-        # ['feh', '--bg-fill', '/ruta/a/tu/wallpaper.jpg'], # Ejemplo para fondo de pantalla
-    ]
-
-    for p in processes:
-        subprocess.Popen(p)
+    subprocess.Popen(["xrandr", "--output", "DP-2", "--mode", "1920x1080", "--rate", "144.00"])
+    for cmd in (
+        ["picom", "--config", HOME("~/.config/picom.conf")],
+        ["dunst"],
+    ):
+        subprocess.Popen(cmd)
 
 
-def open_pavucontrol():
-    qtile.spawn("pavucontrol")
+# ── Helpers ────────────────────────────────────────────────────────────
+def move_window_to_other_screen(qtile):
+    """Mueve la ventana enfocada al siguiente screen (no-op con un solo monitor)."""
+    win = qtile.current_window
+    if win is not None and len(qtile.screens) > 1:
+        win.toscreen((win.screen.index + 1) % len(qtile.screens))
 
 
-def open_nm_connection_editor():
-    qtile.spawn("nm-connection-editor")
-
-def open_impala():
-    qtile.spawn("alacritty -e impala")
-
-def open_rofi_wifi_menu():
-    qtile.spawn("/home/jose/.local/bin/rofi-wifi-menu")
-
-
-@qhook.subscribe.up_battery_critical
-def battery_critical(battery_name):
-    qtile.spawn('notify-send "Battery is critical" -u "critical"')
-
-
-@qhook.subscribe.up_battery_full
-def battery_full(battery_name):
-    battery_status = os.popen(f"upower -i $(upower -e | grep {battery_name}) | grep state").read()
-    if "fully-charged" in battery_status:
-        qtile.spawn('notify-send "Battery is fully charged" -u "low"')
-
-
-@qhook.subscribe.up_battery_low
-def battery_low(battery_name):
-    qtile.spawn("notify-send 'Battery is running low' -u 'normal'")
-
-
-@qhook.subscribe.up_power_connected
-def plugged_in():
-    qtile.spawn("notify-send 'Battery is connected' -u 'normal'")
-    qtile.spawn("paplay ~/Downloads/Thip.ogg")
-
-
-@qhook.subscribe.up_power_disconnected
-def unplugged():
-    qtile.spawn("notify-send 'Battery is disconnected' -u 'normal'")
-    qtile.spawn("paplay ~/Downloads/Thip.ogg")
-    # qtile.spawn("ffplay power_off.wav")
+# ── Notificaciones de ventanas urgentes ────────────────────────────────
+@hook.subscribe.client_urgent_hint_changed
+def urgent_notification(win):
+    if win.urgent:
+        wm_class = win.get_wm_class()
+        app = wm_class[0] if wm_class else "app"
+        title = win.name or ""
+        qtile.spawn(
+            " ".join(
+                [
+                    "dunstify",
+                    "-u", "critical",
+                    "-r", "9998",
+                    "-t", "8000",
+                    "-a", shlex.quote(app),
+                    shlex.quote(f"[{app}] {title}"),
+                ]
+            )
+        )
 
 
 keys = [
-    # change focus between monitors
-    Key([mod], "q", lazy.to_screen(0)),
-    Key([mod], "e", lazy.to_screen(1)),
-    Key([mod], "h", lazy.layout.left(), desc="Move focus to left"),
-    Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
-    Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
-    Key([mod], "k", lazy.layout.up(), desc="Move focus up"),
-    Key([mod, "control"], "l", lazy.group.next_window(), desc="Move window focus to other window",),
-    # Move windows between left/right columns or move up/down in current stack.
-    # Moving out of range in Columns layout will create new column.
-    Key([mod, "shift"], "h", lazy.layout.shuffle_left(), desc="Move window to the left"),
-    Key([mod, "shift"], "l", lazy.layout.shuffle_right(), desc="Move window to the right",),
-    Key([mod, "shift"], "j", lazy.layout.shuffle_down(), desc="Move window down"),
-    Key([mod, "shift"], "k", lazy.layout.shuffle_up(), desc="Move window up"),
-    # Cambiar entre layouts
-    Key([mod], "Tab", lazy.next_layout(), desc="Cambiar al siguiente layout"),
-    Key([mod, "shift"], "Tab", lazy.prev_layout(), desc="Cambiar al anterior layout"),
-    # Grow windows. If current window is on the edge of screen and direction
-    # will be to screen edge - window would shrink.
-    Key([mod, "control"], "h", lazy.layout.grow_left(), desc="Grow window to the left"),
-    Key([mod, "control"], "l", lazy.layout.grow_right(), desc="Grow window to the right"),
-    Key([mod, "control"], "j", lazy.layout.grow_down(), desc="Grow window down"),
-    Key([mod, "control"], "k", lazy.layout.grow_up(), desc="Grow window up"),
-    Key([mod], "n", lazy.layout.normalize(), desc="Reset all window sizes"),
-    Key([mod], "d", lazy.spawn("rofi -show drun")),
-    # Toggle between split and unsplit sides of stack.
-    # Split = all windows displayed
-    # Unsplit = 1 window displayed, like Max layout, but still with
-    # multiple stack panes
-    Key([mod, "shift"], "Return", lazy.layout.toggle_split(), desc="Toggle between split and unsplit sides of stack"),
-    Key([mod], "Return", lazy.spawn(terminal), desc="Launch terminal"),
-    # Toggle between different layouts as defined below
-    Key([mod], "w", lazy.window.kill(), desc="Kill focused window"),
-    Key([mod], "f", lazy.window.toggle_fullscreen(), desc="Toggle fullscreen on the focused window",),
-    Key([mod], "t", lazy.window.toggle_floating(), desc="Toggle floating on the focused window",),
-    Key([mod, "control"], "r", lazy.reload_config(), desc="Reload the config"),
-    Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown Qtile"),
-    Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
-    Key([mod], "space", lazy.widget["keyboardlayout"].next_keyboard(), desc="Next keyboard layout",),
-    Key([], "XF86AudioMute", lazy.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")),
-    Key([], "XF86AudioLowerVolume", lazy.spawn("amixer sset Master 5%-")),
-    Key([], "XF86AudioRaiseVolume", lazy.spawn("amixer sset Master 5%+")),
-    # Brightness
-    Key([], "XF86MonBrightnessUp", lazy.spawn("brightnessctl set +5%")),
-    Key([], "XF86MonBrightnessDown", lazy.spawn("brightnessctl set 5%-")),
-    # Screenshtos
-    Key([mod], "Print", lazy.spawn("scrot /home/jose/Images/%Y-%m-%d-%T-screenshot.png"),),
-    Key([mod, 'control'], "Print", lazy.spawn("scrot -s /home/jose/Images/%Y-%m-%d-%T-screenshot.png"),),
+    # ── Sesión ──────────────────────────────────────────────────────────
+    Key([mod, "shift"], "q", lazy.spawn(HOME("~/.local/bin/powermenu.sh")), desc="Menu de apagado"),
+    Key([mod], "p", lazy.spawn(HOME("~/.local/bin/lock.sh")), desc="Bloquear pantalla"),
+    Key([mod, "control"], "r", lazy.reload_config(), desc="Recargar config"),
+    Key([mod, "control"], "q", lazy.shutdown(), desc="Cerrar Qtile"),
+
+    # ── Lanzadores ──────────────────────────────────────────────────────
+    Key([mod], "Return", lazy.spawn(terminal), desc="Terminal"),
+    Key([mod, "control"], "Return", lazy.spawn(f"{terminal} -e tmux"), desc="Terminal en tmux"),
+    Key([mod], "d", lazy.spawn("rofi -show combi -combi-modes window,drun"), desc="Lanzador + selector de ventanas"),
+    Key([mod], "r", lazy.spawncmd(), desc="Prompt de comandos en la barra"),
+
+    # ── Pantallas ───────────────────────────────────────────────────────
+    Key([mod], "q", lazy.to_screen(0), desc="Foco a pantalla 0"),
+    Key([mod], "e", lazy.to_screen(1).when(func=lambda: len(qtile.screens) > 1), desc="Foco a pantalla 1"),
+    Key([mod, "shift"], "e", lazy.function(move_window_to_other_screen), desc="Mover ventana a otra pantalla"),
+
+    # ── Foco ────────────────────────────────────────────────────────────
+    Key([mod], "h", lazy.layout.left(), desc="Foco izquierda"),
+    Key([mod], "l", lazy.layout.right(), desc="Foco derecha"),
+    Key([mod], "j", lazy.layout.down(), desc="Foco abajo"),
+    Key([mod], "k", lazy.layout.up(), desc="Foco arriba"),
+    Key([mod, "control"], "Tab", lazy.group.next_window(), desc="Siguiente ventana"),
+    Key([mod, "control", "shift"], "Tab", lazy.group.prev_window(), desc="Ventana anterior"),
+
+    # ── Mover ventanas ──────────────────────────────────────────────────
+    Key([mod, "shift"], "h", lazy.layout.shuffle_left(), desc="Mover ventana a la izquierda"),
+    Key([mod, "shift"], "l", lazy.layout.shuffle_right(), desc="Mover ventana a la derecha"),
+    Key([mod, "shift"], "j", lazy.layout.shuffle_down(), desc="Mover ventana abajo"),
+    Key([mod, "shift"], "k", lazy.layout.shuffle_up(), desc="Mover ventana arriba"),
+
+    # ── Redimensionar ───────────────────────────────────────────────────
+    Key([mod, "control"], "h", lazy.layout.grow_left(), desc="Redimensionar izquierda"),
+    Key([mod, "control"], "l", lazy.layout.grow_right(), desc="Redimensionar derecha"),
+    Key([mod, "control"], "j", lazy.layout.grow_down(), desc="Redimensionar abajo"),
+    Key([mod, "control"], "k", lazy.layout.grow_up(), desc="Redimensionar arriba"),
+    Key([mod], "n", lazy.layout.normalize(), desc="Resetear tamaños"),
+    Key([mod, "shift"], "Return", lazy.layout.flip(), desc="Voltear master al otro lado"),
+
+    # ── Layouts ─────────────────────────────────────────────────────────
+    Key([mod], "Tab", lazy.next_layout(), desc="Siguiente layout"),
+    Key([mod, "shift"], "Tab", lazy.prev_layout(), desc="Layout anterior"),
+
+    # ── Estado de la ventana ────────────────────────────────────────────
+    Key([mod], "w", lazy.window.kill(), desc="Cerrar ventana"),
+    Key([mod], "f", lazy.window.toggle_fullscreen(), desc="Fullscreen"),
+    Key([mod], "t", lazy.window.toggle_floating(), desc="Floating"),
+    Key([mod], "m", lazy.window.toggle_minimize(), desc="Minimizar"),
+    Key([mod, "shift"], "m", lazy.group.unminimize_all(), desc="Restaurar minimizadas"),
+
+    # ── Navegación entre grupos ─────────────────────────────────────────
+    Key([mod], "period", lazy.screen.next_group(), desc="Grupo siguiente"),
+    Key([mod], "comma", lazy.screen.prev_group(), desc="Grupo anterior"),
+    Key([mod], "grave", lazy.screen.toggle_group(), desc="Ultimo grupo (toggle)"),
+
+    # ── Scratchpads ─────────────────────────────────────────────────────
+    Key([mod], "minus", lazy.group["scratchpad"].dropdown_toggle("term"), desc="Terminal dropdown"),
+    Key([mod, "shift"], "minus", lazy.group["scratchpad"].dropdown_toggle("calendar"), desc="Calendario (calcurse)"),
+    Key([mod, "control"], "minus", lazy.group["scratchpad"].dropdown_toggle("sysmon"), desc="Monitor de sistema (btop)"),
+
+    # ── Audio ───────────────────────────────────────────────────────────
+    Key([], "XF86AudioMute", lazy.spawn(HOME("~/.local/bin/volume.sh") + " mute")),
+    Key([], "XF86AudioLowerVolume", lazy.spawn(HOME("~/.local/bin/volume.sh") + " down")),
+    Key([], "XF86AudioRaiseVolume", lazy.spawn(HOME("~/.local/bin/volume.sh") + " up")),
+
+    # ── Capturas de pantalla ────────────────────────────────────────────
+    Key([mod], "Print", lazy.spawn(HOME("~/.local/bin/screenshot.sh") + " full"), desc="Screenshot + portapapeles"),
+    Key([mod, "control"], "Print", lazy.spawn(HOME("~/.local/bin/screenshot.sh") + " area"), desc="Screenshot area + portapapeles"),
 ]
 
-# Add key bindings to switch VTs in Wayland.
-# We can't check qtile.core.name in default config as it is loaded before qtile is started
-# We therefore defer the check until the key binding is run by using .when(func=...)
+# Teclas para cambiar de VT (solo activo en Wayland)
 for vt in range(1, 8):
     keys.append(
         Key(
             ["control", "mod1"],
             f"f{vt}",
-            lazy.core.change_vt(vt).when(
-                func=lambda: qtile.core.name == "wayland"),
+            lazy.core.change_vt(vt).when(func=lambda: qtile.core.name == "wayland"),
             desc=f"Switch to VT{vt}",
         )
     )
 
 groups = [Group(name) for name in "12345"]
 
-for i in groups:
-    if i.name != "scratchpad":
-        keys.extend(
-            [
-                Key(
-                    [mod],
-                    i.name,
-                    lazy.group[i.name].toscreen(),
-                    desc="Switch to group {}".format(i.name),
-                ),
-                Key(
-                    [mod, "shift"],
-                    i.name,
-                    lazy.window.togroup(i.name, switch_group=True),
-                    desc="Switch to & move focused window to group {}".format(i.name),
-                ),
-                Key(
-                    [mod, "control"], 
-                    i.name, 
-                    lazy.window.togroup(i.name),
-                    desc="move focused window to group {}".format(i.name)
-                ),
-            ]
-        )
+for group in groups:
+    keys.extend(
+        [
+            Key(
+                [mod],
+                group.name,
+                lazy.group[group.name].toscreen(),
+                desc="Ir al grupo {}".format(group.name),
+            ),
+            Key(
+                [mod, "shift"],
+                group.name,
+                lazy.window.togroup(group.name, switch_group=True),
+                desc="Mover ventana al grupo {} y seguirla".format(group.name),
+            ),
+            Key(
+                [mod, "control"],
+                group.name,
+                lazy.window.togroup(group.name),
+                desc="Mover ventana al grupo {}".format(group.name),
+            ),
+        ]
+    )
 
 groups.append(
-    ScratchPad("scratchpad", [
-        DropDown("wifi", "alacritty -e impala", 
-                 opacity=0.95, 
-                 height=0.5, 
-                 width=0.5, 
-                 x=0.25, y=0.25, 
-                 on_focus_lost_hide=True),
-
-        DropDown("term", "alacritty", 
-                 opacity=0.9, 
-                 height=0.7, 
-                 width=0.7, 
-                 x=0.15, y=0.15),
-
-        # Calcurse -> www.calcurse.org
-        DropDown("calendar", "alacritty -e calcurse",
-                 opacity=0.95,
-                 height=0.5,
-                 width=0.5,
-                 x=0.25, y=0.25,
-                 on_focus_lost_hide=True),
-    ])
+    ScratchPad(
+        "scratchpad",
+        [
+            DropDown(
+                "term",
+                terminal,
+                opacity=0.95,
+                height=0.7,
+                width=0.7,
+                x=0.15,
+                y=0.15,
+                on_focus_lost_hide=True,
+            ),
+            # calcurse -> www.calcurse.org
+            DropDown(
+                "calendar",
+                f"{terminal} -e calcurse",
+                opacity=0.95,
+                height=0.5,
+                width=0.5,
+                x=0.25,
+                y=0.25,
+                on_focus_lost_hide=True,
+            ),
+            DropDown(
+                "sysmon",
+                f"{terminal} -e btop",
+                opacity=0.95,
+                height=0.7,
+                width=0.6,
+                x=0.2,
+                y=0.15,
+                on_focus_lost_hide=True,
+            ),
+        ],
+    )
 )
 
 widget_defaults = dict(
-    font="sans",
-    fontsize=14,
-    padding=5,
+    font="JetBrainsMono Nerd Font",
+    fontsize=13,
+    padding=4,
 )
 extension_defaults = widget_defaults.copy()
 
-screens = [
-    Screen(
-        bottom=bar.Bar(
-            [
-                widget.GroupBox(),
-                widget.CurrentLayout(
-                    mode='icon',
-                    foreground='ff5733',
-                    scale=0.6,
-                    spacing=5,
-                ),
-                widget.Spacer(
-                    lenght=bar.STRETCH
-                ),
-                widget.Clock(
-                    format="%Y-%m-%d - %H:%M",
-                    fontsize=16,
-                    mouse_callbacks={
-                        "Button1": lazy.group["scratchpad"].dropdown_toggle("calendar")
-                    },
-                ),
-                widget.Spacer(),
-                widget.Volume(
-                    emoji=True,
-                    volume_app="PulseAudio Volume Control",
-                    mute_format=" ",
-                    emoji_list=["", "", "", "", " "],
-                    mute_foreground="ff5733",
-                    fontsize=16,
-                    width=25,
-                    mouse_callbacks={"Button1": open_pavucontrol},
-                ),
-                widget.Volume(
-                    volume_app="PulseAudio Volume Control",
-                    mute_foreground="ff5733",
-                    fmt="{}",
-                    fontsize=16,
-                    mouse_callbacks={"Button1": open_pavucontrol},
-                ),
-                widget.Backlight(
-                    backlight_name="intel_backlight",
-                    fontsize=16,
-                    format=" {percent:2.0%}",
-                ),
-                widget_extras.WiFiIcon(
-                    mouse_callbacks={
-                        "Button3": lazy.group["scratchpad"].dropdown_toggle("wifi")
-                    },
-                    wifi_arc=90,
-                    foreground="#bd93f9", 
-                ),
-                widget_extras.Bluetooth(
-                    default_text="",
-                    fontsize=16,
-                ),
-                widget.KeyboardLayout(configured_keyboards=["us", "es"]),
-                widget.Wallpaper(
-                    directory="~/Images/wallpapers/",
-                    label=" ",
-                    fontsize=16,
-                    option="fill",
-                    random_selection=True,
-                ),
-                widget_extras.UPowerWidget(
-                    battery_height=10,
-                    fill_critical='#cc0000',
-                    fill_low='#aa00aa',
-                    percentage_low=0.2,
-                    percentage_critical=0.1,
-                    spacing=5,
-                ),
-            ],
-            24,
-        ),
-    ),
-]
 
-# Drag floating layouts.
+def make_bar(include_systray=True):
+    """Barra inferior. Solo la pantalla principal debe llevar el Systray."""
+    widgets = [
+        widget.GroupBox(
+            highlight_method="border",
+            borderwidth=2,
+            rounded=False,
+            this_current_screen_border=colors["fg"],
+            this_screen_border=colors["dim"],
+            other_current_screen_border=colors["dim"],
+            other_screen_border=colors["border_normal"],
+            active=colors["fg"],
+            inactive=colors["dim"],
+            urgent_border=colors["urgent"],
+            urgent_text=colors["urgent"],
+            disable_drag=True,
+        ),
+        widget.CurrentLayout(mode="icon", scale=0.6, foreground=colors["fg"]),
+        widget.Prompt(cursor_type="block", prompt="> "),
+        widget.WindowName(
+            stretch=True,
+            empty_group_string=" ",
+            max_chars=100,
+            foreground=colors["fg"],
+        ),
+        widget.CheckUpdates(
+            custom_command=f"{HOME('~/.local/bin/checkupdates-repo')} 2>/dev/null | wc -l",
+            display_format=" \uf0ac {updates}",
+            no_update_string="",
+            colour_have_updates=colors["urgent"],
+            colour_no_updates=colors["fg"],
+            update_interval=1800,
+            mouse_callbacks={"Button1": lazy.spawn(f"{terminal} -e sudo pacman -Syu")},
+        ),
+        widget.Volume(
+            unmute_format=" \uf028 {volume}%",
+            mute_format=" MUTE",
+            mute_foreground=colors["urgent"],
+            volume_app="pavucontrol",
+            get_volume_command="pactl get-sink-volume @DEFAULT_SINK@",
+            check_mute_command="pactl get-sink-mute @DEFAULT_SINK@",
+            check_mute_string="yes",
+            mute_command="pactl set-sink-mute @DEFAULT_SINK@ toggle",
+            volume_up_command="pactl set-sink-volume @DEFAULT_SINK@ +2%",
+            volume_down_command="pactl set-sink-volume @DEFAULT_SINK@ -2%",
+        ),
+        widget.KeyboardLayout(configured_keyboards=["us", "es"]),
+    ]
+    if include_systray:
+        widgets.append(widget.Systray(padding=5, icon_size=16))
+    widgets += [
+        widget.Wallpaper(
+            directory="~/Images/wallpapers/",
+            label="\uf03e",
+            option="fill",
+            random_selection=True,
+        ),
+        widget.Clock(
+            format="%a %d %b %H:%M:%S",
+            mouse_callbacks={
+                "Button1": lazy.group["scratchpad"].dropdown_toggle("calendar")
+            },
+        ),
+        widget.TextBox(
+            text="\uf011",
+            padding=5,
+            mouse_callbacks={"Button1": lazy.spawn(HOME("~/.local/bin/powermenu.sh"))},
+        ),
+    ]
+    return bar.Bar(widgets, 24, background=colors["bg"])
+
+
+screens = [Screen(bottom=make_bar())]
+# Con un segundo monitor, añadir:
+# screens.append(Screen(bottom=make_bar(include_systray=False)))
+
+# Arrastrar/redimensionar ventanas flotantes con el ratón
 mouse = [
     Drag(
         [mod],
@@ -289,17 +315,21 @@ mouse = [
     Click(
         [mod],
         "Button2",
-        lazy.window.bring_to_front()
+        lazy.window.bring_to_front(),
     ),
     Drag(
         [mod],
         "Button3",
-        lazy.window.set_size_floating(), start=lazy.window.get_size()
+        lazy.window.set_size_floating(),
+        start=lazy.window.get_size(),
     ),
 ]
 
 dgroups_key_binder = None
-dgroups_app_rules = []  # type: list
+dgroups_app_rules = [
+    Rule(Match(wm_class="steam"), group="5"),
+    Rule(Match(wm_class="steamwebhelper"), group="5"),
+]
 follow_mouse_focus = True
 bring_front_click = False
 floats_kept_above = True
@@ -314,20 +344,36 @@ floating_layout = layout.Floating(
         Match(wm_class="ssh-askpass"),  # ssh-askpass
         Match(title="branchdialog"),  # gitk
         Match(title="pinentry"),  # GPG key password entry
+        Match(wm_class="steam", title="Friends List"),
+        Match(wm_class="steam", title="Settings"),
+        Match(wm_class="steam", title="Screenshot Uploader"),
+        Match(wm_class="steam", title="Steam - News"),
+        Match(wm_class="feh"),
     ]
 )
 
 layouts = [
     layout.Max(),
-    layout.MonadTall(margin=8, border_width=2, border_focus="#0000ff", ratio=0.6),
-    layout.MonadWide(margin=8, border_width=2, border_focus="#0000ff", ratio=0.7),
+    layout.MonadTall(
+        margin=8,
+        border_width=2,
+        border_focus=colors["fg"],
+        border_normal=colors["border_normal"],
+        ratio=0.6,
+    ),
+    layout.MonadWide(
+        margin=8,
+        border_width=2,
+        border_focus=colors["fg"],
+        border_normal=colors["border_normal"],
+        ratio=0.7,
+    ),
 ]
 
-
+auto_minimize = False
 auto_fullscreen = True
-focus_on_window_activation = "smart"
-reconfigure_screens = True
 
-auto_minimize = True
+focus_on_window_activation = "smart"  # urgent, focus, smart
+reconfigure_screens = True
 
 wl_input_rules = None
