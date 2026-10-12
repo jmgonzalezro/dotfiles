@@ -1,126 +1,148 @@
+/* Monocromo hacker — misma paleta que qtile/dunst.
+   rofi 2.0 trae un tema solarized por defecto cuyos bloques de estado
+   (element selected.normal, .active, urgent...) referencian variables
+   propias (background, lightfg, blue, red...). La coherencia se consigue
+   redefiniendo ESAS variables con nuestra paleta. */
+
 configuration {
-	modi:				"drun";
-	font:				"Hack 12";
-	show-icons:                     true;
-	icon-theme: 			"Nord-Icon";
-	display-drun: 			"";
-	drun-display-format:            "{name}";
-	sidebar-mode: 			false;
+    modes:                 "combi,drun,window,run";
+    combi-modes:           "window,drun";
+    combi-hide-mode-prefix: true;
+    combi-display-format:  "{text}";
+    display-combi:         ">";
+    display-drun:          ">";
+    display-window:        ">";
+    font:                  "JetBrainsMono Nerd Font 13";
+    show-icons:            false;
+    drun-display-format:   "{name}";
+    window-format:         "{w} · {c} · {t}";
+    sidebar-mode:          false;
 }
 
-//@theme "/dev/null"
-
 * {
-	bg:				#2e3440;
-        bg-alt:                         #232831;
-	fg:				#eceff4;
-	accent:				#8fbcbb;
-        accent-alt:                     #3b4252;
-	button:				#4c566a;
+    /* ── Override del solarized por defecto ─────────────────────────── */
+    background: #0a0a0a;
+    foreground: #e6e6e6;
+    lightbg:    #0a0a0a;
+    lightfg:    #e6e6e6;
+    blue:       #ff0000;   /* acento (antes azul solarized) */
+    red:        #ff0000;
 
-	background-color:		@bg;
-	text-color:			@fg;
+    /* ── Paleta semántica propia ────────────────────────────────────── */
+    bg:         #0a0a0a;
+    fg:         #e6e6e6;
+    dim:        #5c5c5c;
+    urgent:     #ff0000;
+    sel-bg:     #e6e6e6;
+    sel-fg:     #0a0a0a;
+    transparent: transparent;
 }
 
 window {
-        border:                         3px;
-        border-color:                   @bg-alt;
-	border-radius:                  7px;
-	width:			    	50%;
-	padding: 			32px;
-}
-
-prompt {
-	background-color:		@bg-alt;
-	enabled:			true;
-	padding:			0.5% 32px 0% -0.5%;
-	font:				"monospace 10";
-}
-
-entry {
-    	placeholder:			"Search";
-	background-color:               @bg-alt;
-    	placeholder-color:              @fg;
-    	expand:                         true;
-    	padding:                        0.15% 0% 0% 0%;
-}
-
-inputbar {
-	children:			[ prompt, entry ];
-    	background-color:               @bg-alt;
-        border:                         0 5px solid 0 5px solid;
-        border-color:                   @accent;
-    	expand:                         false;
-    	border-radius:                  6px;
-    	margin:                         0%;
-    	padding:                        10px;
-}
-
-listview {
-    	columns:                        5;
-    	lines:	                        3;
-    	cycle:                          false;
-    	dynamic:                        true;
-    	layout:                         vertical;
+    background-color: @bg;
+    border:           2px;
+    border-color:     @fg;
+    border-radius:    0;
+    width:            620px;
+    location:         center;
+    anchor:           center;
+    cursor:           text;
 }
 
 mainbox {
-    	children:                       [ inputbar, listview ];
-    	spacing:                       	2%;
-    	padding:                        2% 1% 2% 1%;
+    children:         [ inputbar, message, listview ];
+    padding:          14px 16px;
+    spacing:          0;
+    background-color: transparent;
+}
+
+/* ── Barra de entrada: "> texto" como el Prompt de la barra de qtile ── */
+inputbar {
+    children:         [ prompt, entry ];
+    padding:          4px 2px 8px 2px;
+    border:           0 0 2px 0;
+    border-color:     @dim;
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+prompt {
+    padding:          0 8px 0 0;
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+entry {
+    padding:           0 0 0 2px;
+    background-color:  transparent;
+    text-color:        @fg;
+    placeholder:       "buscar...";
+    placeholder-color: @dim;
+    cursor:            text;
+}
+
+/* ── Lista: una columna de texto, sin iconos ni bordes punteados ────── */
+listview {
+    lines:            8;
+    columns:          1;
+    spacing:          2px;
+    fixed-height:     false;
+    dynamic:          true;
+    scrollbar:        false;
+    border:           0;
+    padding:          2px 0 0 0;
+    background-color: transparent;
 }
 
 element {
-    	background-color:               @bg-alt;
-        border:                         5px solid 0 5px solid 0;
-        border-color:                   @accent-alt;
-    	orientation:                    vertical;
-    	padding:                        2% 0% 2% 0%;
-        margin:                         12px;
+    padding:          6px 10px;
+    background-color: transparent;
+    text-color:       @fg;
 }
 
-element-icon {
-    	size:                           48px;
-    	horizontal-align:	 	0.5;
+/* Selección: bloque invertido (texto negro sobre blanco) */
+element selected {
+    background-color: @sel-bg;
+    text-color:       @sel-fg;
 }
 
 element-text {
-    	expand:                         true;
-    	horizontal-align:               0.5;
-    	vertical-align:                 0.5;
-    	margin:                         0.5% 0.5% -0.5% 0.5%;
+    background-color: transparent;
+    text-color:       inherit;
+    vertical-align:   0.5;
+    horizontal-align: 0.0;
 }
 
-element-text, element-icon {
-	background-color:		inherit;
-	text-color:			inherit;
+element-icon {
+    background-color: transparent;
+    size:             0px;
 }
 
-element selected {
-    	background-color:               @button;
-        border:                         5px solid 0 5px solid 0;
-        border-color:                   @accent;
-    	border-radius:                  6px;
+/* ── Extras (dmenu del powermenu, mensajes) ──────────────────────────── */
+message {
+    border:           2px 0 0 0;
+    border-color:     @dim;
+    padding:          8px 0 0 0;
+    background-color: transparent;
+    text-color:       @fg;
 }
 
-//@theme "/usr/share/rofi/themes/android_notification.rasi"
+textbox {
+    background-color: transparent;
+    text-color:       @fg;
+}
 
-//@theme "/usr/share/rofi/themes/Arc-Dark.rasi"
+scrollbar {
+    width:            0px;
+    handle-width:     0px;
+    background-color: transparent;
+    handle-color:     @dim;
+}
 
-//@theme "/usr/share/rofi/themes/DarkBlue.rasi"
+sidebar {
+    border:           0;
+}
 
-//@theme "/usr/share/rofi/themes/gruvbox-dark.rasi"
-
-//@theme "/usr/share/rofi/themes/Adapta-Nokto.rasi"
-
-//@theme "/usr/share/rofi/themes/Arc-Dark.rasi"
-
-//@theme "/usr/share/rofi/themes/Arc-Dark.rasi"
-
-//@theme "/usr/share/rofi/themes/sidebar.rasi"
-
-//@theme "/usr/share/rofi/themes/arthur.rasi"
-
-//@theme "/usr/share/rofi/themes/paper-float.rasi"
-
-@theme "/usr/share/rofi/themes/sidebar.rasi"
+mode-switcher {
+    enabled:          false;
+}
