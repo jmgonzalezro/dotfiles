@@ -1,4 +1,3 @@
-# Qtile config — minimal, hacker style
 # Docs: https://docs.qtile.org/
 
 import os
@@ -37,9 +36,16 @@ colors = {
 @hook.subscribe.startup_once
 def autostart():
     subprocess.Popen(["xrandr", "--output", "DP-2", "--mode", "1920x1080", "--rate", "144.00"])
+    # Screensaver 10 min (→ i3lock vía xss-lock) + DPMS: monitor off a los 20 min
+    subprocess.Popen(["xset", "s", "600", "0"])
+    subprocess.Popen(["xset", "dpms", "600", "900", "1200"])
+    # xss-lock: bloquea al inactividad. NO configurar suspend/logind IdleAction:
+    # el XHCI del chipset (02:00.0) está dañado y devuelve -EBUSY → el suspend rebota.
+    subprocess.Popen(["xss-lock", "--transfer-sleep-lock", "--", HOME("~/.local/bin/lock.sh")])
     for cmd in (
         ["picom", "--config", HOME("~/.config/picom.conf")],
         ["dunst"],
+        ["steam", "-silent"],
     ):
         subprocess.Popen(cmd)
 
@@ -83,7 +89,7 @@ keys = [
     # ── Lanzadores ──────────────────────────────────────────────────────
     Key([mod], "Return", lazy.spawn(terminal), desc="Terminal"),
     Key([mod, "control"], "Return", lazy.spawn(f"{terminal} -e tmux"), desc="Terminal en tmux"),
-    Key([mod], "d", lazy.spawn("rofi -show combi -combi-modes window,drun"), desc="Lanzador + selector de ventanas"),
+    Key([mod], "d", lazy.spawn("rofi -show combi -combi-modes window,drun -p '>'"), desc="Lanzador + selector de ventanas"),
     Key([mod], "r", lazy.spawncmd(), desc="Prompt de comandos en la barra"),
 
     # ── Pantallas ───────────────────────────────────────────────────────
@@ -142,6 +148,9 @@ keys = [
     # ── Capturas de pantalla ────────────────────────────────────────────
     Key([mod], "Print", lazy.spawn(HOME("~/.local/bin/screenshot.sh") + " full"), desc="Screenshot + portapapeles"),
     Key([mod, "control"], "Print", lazy.spawn(HOME("~/.local/bin/screenshot.sh") + " area"), desc="Screenshot area + portapapeles"),
+
+    # ── Idioma del teclado ──────────────────────────────────────────────
+    Key([mod], "space", lazy.widget["keyboardlayout"].next_keyboard(), desc="Siguiente layout de teclado"),
 ]
 
 # Teclas para cambiar de VT (solo activo en Wayland)
@@ -254,13 +263,15 @@ def make_bar(include_systray=True):
             foreground=colors["fg"],
         ),
         widget.CheckUpdates(
-            custom_command=f"{HOME('~/.local/bin/checkupdates-repo')} 2>/dev/null | wc -l",
+            # El widget cuenta LÍNEAS de salida: el script imprime un paquete
+            # por línea (vacío si no hay updates) — sin | wc -l.
+            custom_command=f"{HOME('~/.local/bin/checkupdates-repo')} 2>/dev/null",
             display_format=" \uf0ac {updates}",
             no_update_string="",
             colour_have_updates=colors["urgent"],
             colour_no_updates=colors["fg"],
             update_interval=1800,
-            mouse_callbacks={"Button1": lazy.spawn(f"{terminal} -e sudo pacman -Syu")},
+            execute=f"{terminal} -e sudo pacman -Syu",
         ),
         widget.Volume(
             unmute_format=" \uf028 {volume}%",

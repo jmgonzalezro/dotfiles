@@ -1,0 +1,13 @@
+#!/bin/bash
+# Actualizaciones de los REPOSITORIOS OFICIALES (pacman), sin root y sin tocar
+# la base de datos del sistema. Tecnica de checkupdates (pacman-contrib):
+# fakeroot + db temporal. --disable-sandbox porque el sandbox Landlock de
+# pacman 7 no puede aplicarse dentro de fakeroot.
+# Salida: lista de paquetes actualizables, una linea c/u.
+db="${CHECKUPDATES_DB:-${TMPDIR:-/tmp}/checkup-db-${UID}}"
+trap 'rm -rf "$db"' EXIT
+mkdir -p "$db"
+ln -s /var/lib/pacman/local "$db" 2>/dev/null
+fakeroot -- pacman -Sy --dbpath "$db" --logfile /dev/null --disable-sandbox >/dev/null 2>&1 || exit 1
+pacman -Qu --dbpath "$db" 2>/dev/null
+exit 0
