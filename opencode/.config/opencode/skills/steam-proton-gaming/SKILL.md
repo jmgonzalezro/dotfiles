@@ -5,7 +5,7 @@ description: Optimización de videojuegos en Linux con Steam, Proton, gamemode, 
 
 ## Entorno del usuario
 - Steam instalado, juegos de Windows vía Proton.
-- GPU NVIDIA RTX 3070, driver 615.78.
+- GPU NVIDIA RTX 3070. Versión del driver: consultar en vivo con `nvidia-smi` (cambia con cada actualización).
 
 ## Proton
 - Forzar versión por juego: Steam → Biblioteca → clic derecho → Propiedades → Compatibilidad → "Forzar el uso de una herramienta de compatibilidad".

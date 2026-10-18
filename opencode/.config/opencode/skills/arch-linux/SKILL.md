@@ -6,7 +6,7 @@ description: Administración de Arch Linux — pacman, AUR, systemd, Qtile, NVID
 ## Entorno del usuario
 - Arch Linux (rolling release), kernel reciente.
 - Escritorio Qtile en backend Wayland; tmux + Alacritty como terminal.
-- GPU NVIDIA RTX 3070, driver 615.78. Config de Xorg en /etc/X11/xorg.conf.d/20-nvidia.conf.
+- GPU NVIDIA RTX 3070. Versión del driver actual: obtener con `nvidia-smi` (no está hardcoded). Config de Xorg en /etc/X11/xorg.conf.d/20-nvidia.conf.
 - Dotfiles versionados en ~/dotfiles, enlazados desde ~/.config (alacritty, qtile, nvim, tmux, rofi, dunst...).
 
 ## Paquetes
