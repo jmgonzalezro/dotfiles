@@ -267,7 +267,9 @@ def make_bar(include_systray=True):
             urgent_text=colors["urgent"],
             disable_drag=True,
         ),
-        widget.CurrentLayout(mode="icon", scale=0.6, foreground=colors["fg"]),
+        # padding 2: el GroupBox deja 10px a su derecha y WindowName 5.2 a la
+        # suya; con 2 los huecos quedan en 12/7.2 (centro ≈9.5, como la derecha).
+        widget.CurrentLayout(mode="icon", scale=0.6, foreground=colors["fg"], padding=2),
         widget.Prompt(cursor_type="block", prompt="> "),
         widget.WindowName(
             stretch=True,
@@ -279,7 +281,8 @@ def make_bar(include_systray=True):
             # El widget cuenta LÍNEAS de salida: el script imprime un paquete
             # por línea (vacío si no hay updates) — sin | wc -l.
             custom_command=f"{HOME('~/.local/bin/checkupdates-repo')} 2>/dev/null",
-            display_format=" \uf0ac {updates}",
+            display_format="\uf0ac {updates}",
+            padding=0,  # el "1" termina a 0.8px de la celda: hueco final ≈9.8
             no_update_string="",
             colour_have_updates=colors["urgent"],
             colour_no_updates=colors["fg"],
@@ -288,9 +291,25 @@ def make_bar(include_systray=True):
                 "Button1": lazy.group["scratchpad"].dropdown_toggle("updates"),
             },
         ),
+        # Test de velocidad -> notificación dunst con ping/bajada/subida.
+        #  = md-speedometer: arco + aguja, como cualquier velocímetro.
+        # fontsize 15 para que su ink (12.5px) iguale al del resto de iconos
+        # (globo/imagen/power = 11-12px). padding 9 porque este glifo se sale
+        # 3.5px de su celda monoespaciada: 9 - 3.5 + 4 (Volume) = hueco 9.5.
+        widget.TextBox(
+            text="\U000f04c5",
+            fontsize=15,
+            padding=9,
+            foreground=colors["fg"],
+            mouse_callbacks={
+                "Button1": lazy.spawn(HOME("~/.local/bin/speedtest.sh")),
+            },
+        ),
         widget.Volume(
-            unmute_format=" \uf028 {volume}%",
-            mute_format=" MUTE",
+            # Dos espacios: el altavoz (ink 15px) se sale de su celda de 7.8px
+            # y con uno solo quedaba pegado al número.
+            unmute_format="\uf028  {volume}%",
+            mute_format="MUTE",
             mute_foreground=colors["urgent"],
             volume_app="pavucontrol",
             get_volume_command="pactl get-sink-volume @DEFAULT_SINK@",
@@ -300,14 +319,21 @@ def make_bar(include_systray=True):
             volume_up_command="pactl set-sink-volume @DEFAULT_SINK@ +2%",
             volume_down_command="pactl set-sink-volume @DEFAULT_SINK@ -2%",
         ),
-        widget.KeyboardLayout(configured_keyboards=["us", "es"]),
+        # padding 3: sus letras aportan 1.2px internos; 3+1.2+3+1.2 ≈ 9.
+        widget.KeyboardLayout(configured_keyboards=["us", "es"], padding=3),
     ]
     if include_systray:
-        widgets.append(widget.Systray(padding=5, icon_size=16))
+        # icon_size 12: tapa dura de Qtile sobre la altura -> ink 12px, igual
+        # que globo/imagen/power. padding 5: el icono se sale 4px de su caja,
+        # así que 5-4+8 (Wallpaper) = hueco 9.
+        widgets.append(widget.Systray(padding=5, icon_size=12))
     widgets += [
         widget.Wallpaper(
             directory="~/Images/wallpapers/",
             label="\uf03e",
+            # Este glifo se sale 4.2px de su celda; con padding 8 el hueco
+            # resultante con el reloj queda en ~9px, igual que el resto.
+            padding=8,
             option="fill",
             random_selection=True,
         ),
@@ -319,7 +345,7 @@ def make_bar(include_systray=True):
         ),
         widget.TextBox(
             text="\uf011",
-            padding=5,
+            padding=4,
             mouse_callbacks={"Button1": lazy.spawn(HOME("~/.local/bin/powermenu.sh"))},
         ),
     ]
