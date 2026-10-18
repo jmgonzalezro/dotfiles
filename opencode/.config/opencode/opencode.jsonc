@@ -1,0 +1,84 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  // Modelo por defecto: MiMo V2.6 Flash (gratis en OpenCode Console/Go).
+  // Cambia con /models. Otros gratis: deepseek-v4.1-flash-free, glm-5.3-flash-free,
+  // nemotron-3.5-super-vl-free (con visión), beam-free, longcat-2.5-preview-free.
+  "model": "opencode/mimo-v2.6-flash-free",
+
+  // Agente principal por defecto. Los agentes propios (arch-admin, gaming) están en ./agents.
+  "default_agent": "build",
+
+  // Shell que usan las herramientas de terminal.
+  "shell": "/bin/bash",
+
+  // Avisar antes de instalar actualizaciones (no autoinstalar para no reiniciar el servicio).
+  "update": "notify",
+
+  // Formatear archivos tras write/edit/patch cuando hay formateador disponible.
+  "formatter": true,
+
+  // Límite de salida de herramientas: evita saturar sesiones de programación largas.
+  "tool_output": {
+    "max_lines": 2000,
+    "max_bytes": 51200
+  },
+
+  // Compactación automática para sesiones largas.
+  "compaction": {
+    "auto": true,
+    "keep": { "tokens": 15000 },
+    "buffer": 20000
+  },
+
+  // No desencadenar recargas por artefactos de build o dependencias.
+  "watcher": {
+    "ignore": [
+      "node_modules/**",
+      "dist/**",
+      "build/**",
+      "target/**",
+      "__pycache__/**",
+      "*.pyc",
+      ".venv/**",
+      "venv/**",
+      ".git/**",
+      "coverage/**",
+      ".next/**",
+      "*.toc",
+      "*.blob"
+    ]
+  },
+
+  // Permisos: lo rutinario se permite por defecto; lo destructivo o del sistema pregunta.
+  // El formato es action / resource / effect (allow | ask | deny). La última regla que
+  // coincide es la que vale, así que lo específico va después de lo general.
+  "permissions": [
+    // --- Riesgo alto: siempre preguntar ---
+    { "action": "shell", "resource": "git push *", "effect": "ask" },
+    { "action": "shell", "resource": "rm -rf *", "effect": "ask" },
+    { "action": "shell", "resource": "sudo *", "effect": "ask" },
+    { "action": "shell", "resource": "dd *", "effect": "ask" },
+
+    // --- Paquetes y sistema (Arch) ---
+    { "action": "shell", "resource": "pacman -R *", "effect": "ask" },
+    { "action": "shell", "resource": "pacman -Rns *", "effect": "ask" },
+    { "action": "shell", "resource": "systemctl *", "effect": "ask" },
+
+    // --- Destrucción de discos: denegar ---
+    { "action": "shell", "resource": "mkfs *", "effect": "deny" },
+    { "action": "shell", "resource": "wipefs *", "effect": "deny" },
+
+    // --- Editar configs críticas (sesión/entorno): preguntar ---
+    { "action": "edit", "resource": "/etc/**", "effect": "ask" },
+    { "action": "edit", "resource": "~/.config/qtile/**", "effect": "ask" }
+  ],
+  "mcp": {
+    "servers": {
+      "context7": {
+        "type": "remote",
+        "url": "https://mcp.context7.com/mcp"
+      }
+    }
+  }
+}

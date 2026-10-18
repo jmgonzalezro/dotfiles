@@ -91,6 +91,7 @@ keys = [
     Key([mod, "control"], "Return", lazy.spawn(f"{terminal} -e tmux"), desc="Terminal en tmux"),
     Key([mod], "d", lazy.spawn("rofi -show combi -combi-modes window,drun -p '>'"), desc="Lanzador + selector de ventanas"),
     Key([mod], "r", lazy.spawncmd(), desc="Prompt de comandos en la barra"),
+    Key([mod, "shift"], "o", lazy.spawn(f"{terminal} -e opencode"), desc="OpenCode (asistente IA)"),
 
     # ── Pantallas ───────────────────────────────────────────────────────
     Key([mod], "q", lazy.to_screen(0), desc="Foco a pantalla 0"),
@@ -225,6 +226,18 @@ groups.append(
                 y=0.15,
                 on_focus_lost_hide=True,
             ),
+            # pacman -Syu en consola emergente inferior (Enter cancela sudo,
+            # una tecla cierra al terminar)
+            DropDown(
+                "updates",
+                f"{terminal} -e bash -c 'sudo pacman -Syu; echo; read -n1 -p \"Pulsa una tecla para cerrar...\"'",
+                opacity=0.95,
+                height=0.42,
+                width=1.0,
+                x=0.0,
+                y=0.55,
+                on_focus_lost_hide=True,
+            ),
         ],
     )
 )
@@ -271,7 +284,9 @@ def make_bar(include_systray=True):
             colour_have_updates=colors["urgent"],
             colour_no_updates=colors["fg"],
             update_interval=1800,
-            execute=f"{terminal} -e sudo pacman -Syu",
+            mouse_callbacks={
+                "Button1": lazy.group["scratchpad"].dropdown_toggle("updates"),
+            },
         ),
         widget.Volume(
             unmute_format=" \uf028 {volume}%",

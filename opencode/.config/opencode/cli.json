@@ -1,0 +1,39 @@
+{
+  "$schema": "https://opencode.ai/v2/cli.json",
+
+  // Tema: el básico por defecto de OpenCode. Cambia con /themes si algún día quieres otro
+  // (catppuccin, gruvbox, tokyonight, everforest...).
+  "animations": true,
+
+  "diffs": {
+    "wrap": "word"
+  },
+
+  "session": {
+    "sidebar": "auto",
+    "scrollbar": false,
+    "thinking": "hide",
+    "markdown": "rendered",
+    "tps": true
+  },
+
+  // Notificaciones de escritorio (dunst) y sonido cuando OpenCode termina
+  // una tarea larga o necesita permiso. Ideal con tmux, te avisa sin mirar.
+  "attention": {
+    "notifications": true,
+    "sound": true,
+    "volume": 0.4
+  },
+
+  // Adjunta el archivo/selección activa de tu editor (nvim) como contexto del prompt.
+  "prompt": {
+    "editor": true,
+    "paste": "compact"
+  },
+
+  // Mantiene el título de la ventana/pestaña al día y copia al portapapeles al seleccionar.
+  "terminal": {
+    "title": true,
+    "copy": "select"
+  }
+}
