@@ -5,7 +5,7 @@ description: Administración de Arch Linux — pacman, AUR, systemd, Qtile, NVID
 
 ## Entorno del usuario
 - Arch Linux (rolling release), kernel reciente.
-- Escritorio Qtile en backend Wayland; tmux + Alacritty como terminal.
+- Escritorio Qtile (hoy backend Wayland; confirma el actual con `$XDG_SESSION_TYPE`); tmux + Alacritty como terminal.
 - GPU NVIDIA RTX 3070. Versión del driver actual: obtener con `nvidia-smi` (no está hardcoded). Config de Xorg en /etc/X11/xorg.conf.d/20-nvidia.conf.
 - Dotfiles versionados en ~/dotfiles, enlazados desde ~/.config (alacritty, qtile, nvim, tmux, rofi, dunst...).
 
@@ -24,7 +24,7 @@ description: Administración de Arch Linux — pacman, AUR, systemd, Qtile, NVID
 ## Qtile
 - Config: ~/.config/qtile/config.py (symlink a ~/dotfiles/qtile/.config/qtile/config.py)
 - Recargar: atajo `mod+control+r`, o `qtile cmd-obj -o cmd -f reload_config`
-- Backend Wayland: `wl_input_rules` disponible en la config.
+- Si la sesión es Wayland, la config expone `wl_input_rules`; en X11 no aplica.
 
 ## NVIDIA
 - Estado de la GPU: `nvidia-smi`
