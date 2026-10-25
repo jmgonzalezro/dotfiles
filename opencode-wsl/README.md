@@ -39,11 +39,22 @@ No comparte ficheros con la config de casa (`opencode/`): es un juego aparte.
 
 4. Autentica **context7** la primera vez: en el TUI, `/mcps` → seleccionar `context7` → iniciar sesión (OAuth por máquina).
 
-5. *(Opcional)* Si quieres probar `personal_site` u otra web desde el curro, añade playwright:
+5. *(Opcional)* Playwright (probar webs desde el curro). En WSL no hay display, así que va en **headless** y con el chromium de Playwright (el MCP por defecto busca Chrome del sistema):
 
    ```bash
-   opencode mcp add playwright --global -- npx -y @playwright/mcp
-   npx playwright install chromium   # navegador la primera vez
+   npx playwright install chromium      # descarga el navegador (~130 MB, en ~/.cache)
+
+   # wrapper que resuelve la última versión instalada (sobrevive a updates)
+   cat > ~/.local/bin/playwright-chromium <<'SH'
+   #!/bin/sh
+   exec "$(ls -d "$HOME"/.cache/ms-playwright/chromium-*/chrome-linux64/chrome 2>/dev/null | sort -V | tail -1)" "$@"
+   SH
+   chmod +x ~/.local/bin/playwright-chromium
+
+   opencode mcp add playwright --global -- \
+     npx -y @playwright/mcp \
+     --executable-path ~/.local/bin/playwright-chromium \
+     --headless
    ```
 
 ## Notas de uso
