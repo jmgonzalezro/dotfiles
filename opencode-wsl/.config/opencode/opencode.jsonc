@@ -1,0 +1,66 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  // Config SEPARADA para el curro (Windows + WSL/Arch). Misma cuenta OpenCode → mismos modelos gratis.
+  // Modelo por defecto: MiMo V2.6 Flash. Cambia con /models.
+  "model": "opencode/mimo-v2.6-flash-free",
+
+  "default_agent": "build",
+  "shell": "/bin/bash",
+  "update": "notify",
+  "formatter": true,
+
+  "tool_output": {
+    "max_lines": 2000,
+    "max_bytes": 51200
+  },
+
+  "compaction": {
+    "auto": true,
+    "keep": { "tokens": 15000 },
+    "buffer": 20000
+  },
+
+  // Artefactos de build/lenguajes que no deben recargar.
+  "watcher": {
+    "ignore": [
+      "node_modules/**",
+      "dist/**",
+      "build/**",
+      "target/**",
+      "__pycache__/**",
+      "*.pyc",
+      ".venv/**",
+      "venv/**",
+      ".git/**",
+      "coverage/**",
+      ".next/**"
+    ]
+  },
+
+  // Permisos: lo rutinario permitido; destructivo o de sistema pregunta.
+  // Sin reglas de escritorio (no hay Qtile aquí).
+  "permissions": [
+    { "action": "shell", "resource": "git push *", "effect": "ask" },
+    { "action": "shell", "resource": "rm -rf *", "effect": "ask" },
+    { "action": "shell", "resource": "sudo *", "effect": "ask" },
+    { "action": "shell", "resource": "dd *", "effect": "ask" },
+    { "action": "shell", "resource": "pacman -R *", "effect": "ask" },
+    { "action": "shell", "resource": "pacman -Rns *", "effect": "ask" },
+    { "action": "shell", "resource": "systemctl *", "effect": "ask" },
+    { "action": "shell", "resource": "mkfs *", "effect": "deny" },
+    { "action": "shell", "resource": "wipefs *", "effect": "deny" },
+    { "action": "edit", "resource": "/etc/**", "effect": "ask" }
+  ],
+
+  // context7 (docs de librerías). OAuth por máquina: la primera vez autentica con /mcps.
+  // playwright no se incluye por defecto (para añadirlo: opencode mcp add playwright --global -- npx -y @playwright/mcp)
+  "mcp": {
+    "servers": {
+      "context7": {
+        "type": "remote",
+        "url": "https://mcp.context7.com/mcp"
+      }
+    }
+  }
+}
