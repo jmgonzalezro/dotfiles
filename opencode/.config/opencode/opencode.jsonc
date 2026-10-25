@@ -81,10 +81,18 @@
       },
       "playwright": {
         "type": "local",
+        // Usa el chromium instalado por Playwright (npx playwright install chromium).
+        // El wrapper resuelve la versión más reciente en ~/.cache/ms-playwright.
+        // --headless: el servicio no ve el display Wayland, así que el navegador corre sin ventana.
         "command": [
           "npx",
           "-y",
-          "@playwright/mcp"
+          "@playwright/mcp",
+          "--executable-path",
+          "/home/jose/.local/bin/playwright-chromium",
+          "--headless",
+          "--output-dir",
+          "/tmp/opencode/playwright-mcp"
         ]
       }
     }
