@@ -146,3 +146,10 @@ sidebar {
 mode-switcher {
     enabled:          false;
 }
+
+/* Paleta y métricas por tema. Se importa AL FINAL a propósito: en rasi gana
+   la última declaración, así el tema activo sobrescribe los colores de arriba.
+   '?import' = si el archivo no existe, sigue sin error (fallback: este bloque).
+   Lo genera theme.sh a partir de los .toml de qtile/themes.
+   Ojo: no escribir secuencias de comentario anidado en este bloque. */
+?import "~/.local/state/qtile/app/rofi.rasi"

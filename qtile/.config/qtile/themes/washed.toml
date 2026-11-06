@@ -1,0 +1,100 @@
+# Inspirado en "untitled-plain" de William Jansson (gruvbox lavado), visto en
+# r/unixart: https://www.reddit.com/r/unixart/comments/1xjaieh/
+#
+# Papel y tinta: crema (#eae3ce) sobre carbón (#191919), bordes de 1px y una
+# barra inferior translúcida. El alfa va al final (#RRGGBBAA): 00 = totalmente
+# transparente, 99 = negro al 60% (el que usa este tema para que el texto se lea
+# sobre fondos claros).
+
+name = "washed"
+description = "Papel y tinta: crema sobre carbón, bordes finos y barra inferior translúcida."
+
+font = "Iosevka Nerd Font Mono"
+fontsize = 12
+
+bar_size = 22
+bar_position = "bottom"
+bar_background = "#19191999"      # negro al 60%: se ve el fondo, texto legible
+bar_border_width = 0
+bar_border_color = "#eae3ce59"    # (sin efecto con width=0)
+bar_opacity = 1.0
+groupbox_borderwidth = 1
+groupbox_highlight_method = "text"
+
+[colors]
+bg            = "#191919"
+fg            = "#eae3ce"   # papel
+accent        = "#d9d5a5"   # corn silk: grupo/layout activo
+dim           = "#696a6c"   # gris sombra de untitled-plain
+border_focus  = "#eae3ce"
+border_normal = "#696a6c"
+urgent        = "#d5b0b0"   # rosa lavado
+
+[layout]
+margin       = 8
+border_width = 1
+ratio_tall   = 0.6
+ratio_wide   = 0.7
+
+# ── Alacritty ──────────────────────────────────────────────────────────
+# Terminal opaca (sin transparencia) sobre carbón, texto crema y acentos
+# desaturados: el ANSI no puede ser monocromo o los `ls` se vuelven mudos.
+[alacritty]
+opacity      = 1.0
+background   = "#191919"
+foreground   = "#eae3ce"
+cursor       = "#eae3ce"
+cursor_text  = "#191919"
+selection_background = "#eae3ce"
+selection_foreground = "#191919"
+
+normal_black   = "#262626"
+normal_red     = "#b98a8a"
+normal_green   = "#a3b391"
+normal_yellow  = "#d9d5a5"
+normal_blue    = "#8fa3b0"
+normal_magenta = "#b393a8"
+normal_cyan    = "#8fb0ab"
+normal_white   = "#d8d2bf"
+
+bright_black   = "#4a4a4a"
+bright_red     = "#d5b0b0"
+bright_green   = "#b9c9a8"
+bright_yellow  = "#eae3ce"
+bright_blue    = "#a9bcc9"
+bright_magenta = "#c9a9be"
+bright_cyan    = "#a9c9c4"
+bright_white   = "#f2ecda"
+
+# ── Rofi ───────────────────────────────────────────────────────────────
+# Imita la barra: fondo translúcido, borde de 1px, esquinas rectas, Iosevka.
+[rofi]
+background           = "#19191999"
+foreground           = "#eae3ce"
+dim                  = "#696a6c"
+urgent               = "#d5b0b0"
+accent               = "#d9d5a5"
+selection_background = "#eae3ce"
+selection_foreground = "#191919"
+border               = 1
+border_color         = "#eae3ce59"
+radius               = 0
+font                 = "Iosevka Nerd Font Mono 12"
+
+# ── Dunst ──────────────────────────────────────────────────────────────
+[dunst]
+frame_width = 1
+frame_color = "#eae3ce59"
+font        = "Iosevka Nerd Font Mono 12"
+
+low_background      = "#191919"
+low_foreground      = "#696a6c"
+low_frame_color     = "#696a6c"
+
+normal_background   = "#191919"
+normal_foreground   = "#eae3ce"
+normal_frame_color  = "#eae3ce"
+
+critical_background = "#191919"
+critical_foreground = "#d5b0b0"
+critical_frame_color = "#d5b0b0"

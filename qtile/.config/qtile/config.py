@@ -3,6 +3,8 @@
 import os
 import shlex
 import subprocess
+import tomllib
+from pathlib import Path
 
 from libqtile import bar, hook, layout, qtile, widget
 from libqtile.config import (
@@ -22,14 +24,37 @@ terminal = "alacritty"
 mod = "mod4"
 HOME = os.path.expanduser
 
-# ── Paleta monocroma ───────────────────────────────────────────────────
-colors = {
-    "bg": "#0a0a0a",
-    "fg": "#e6e6e6",
-    "dim": "#5c5c5c",
-    "border_normal": "#262626",
-    "urgent": "#ff0000",
-}
+# ── Temas ──────────────────────────────────────────────────────────────
+# Cada tema es un .toml en ./themes. El activo vive en
+# ~/.local/state/qtile/theme (estado de máquina, fuera de dotfiles).
+# QTILE_THEME=<nombre> permite probar un tema sin tocar el estado.
+CONFIG_DIR = Path(__file__).resolve().parent
+THEMES_DIR = CONFIG_DIR / "themes"
+STATE_FILE = Path(
+    os.environ.get("XDG_STATE_HOME", Path.home() / ".local" / "state")
+) / "qtile" / "theme"
+DEFAULT_THEME = "monochrome"
+
+
+def available_themes():
+    return sorted(path.stem for path in THEMES_DIR.glob("*.toml"))
+
+
+def current_theme_name():
+    try:
+        name = STATE_FILE.read_text(encoding="utf-8").strip()
+    except OSError:
+        return DEFAULT_THEME
+    return name if name in available_themes() else DEFAULT_THEME
+
+
+def load_theme(name):
+    with (THEMES_DIR / f"{name}.toml").open("rb") as fh:
+        return tomllib.load(fh)
+
+
+theme = load_theme(os.environ.get("QTILE_THEME") or current_theme_name())
+colors = theme["colors"]
 
 
 # ── Arranque (solo una vez por sesión) ─────────────────────────────────
@@ -42,9 +67,16 @@ def autostart():
     # xss-lock: bloquea al inactividad. NO configurar suspend/logind IdleAction:
     # el XHCI del chipset (02:00.0) está dañado y devuelve -EBUSY → el suspend rebota.
     subprocess.Popen(["xss-lock", "--transfer-sleep-lock", "--", HOME("~/.local/bin/lock.sh")])
+    # Regenera los archivos de tema de las apps antes de lanzarlas: dunst no
+    # admite includes, así que arranca directamente con el config generado.
+    subprocess.run([HOME("~/.local/bin/theme.sh"), "render"], check=False)
+    # Restaura el fondo guardado (ya no hay widget que lo sortee al recargar).
+    subprocess.Popen([HOME("~/.local/bin/wallpaper.sh"), "apply"])
+    themed_dunstrc = STATE_FILE.parent / "app" / "dunstrc"
+    dunst_cmd = ["dunst", "--config", str(themed_dunstrc)] if themed_dunstrc.is_file() else ["dunst"]
     for cmd in (
         ["picom", "--config", HOME("~/.config/picom.conf")],
-        ["dunst"],
+        dunst_cmd,
         ["steam", "-silent"],
     ):
         subprocess.Popen(cmd)
@@ -85,6 +117,10 @@ keys = [
     Key([mod], "p", lazy.spawn(HOME("~/.local/bin/lock.sh")), desc="Bloquear pantalla"),
     Key([mod, "control"], "r", lazy.reload_config(), desc="Recargar config"),
     Key([mod, "control"], "q", lazy.shutdown(), desc="Cerrar Qtile"),
+
+    # ── Temas ───────────────────────────────────────────────────────────
+    Key([mod, "shift"], "t", lazy.spawn(HOME("~/.local/bin/theme.sh") + " toggle"), desc="Cambiar tema (alternar)"),
+    Key([mod, "shift", "control"], "t", lazy.spawn(HOME("~/.local/bin/theme.sh") + " menu"), desc="Selector de temas"),
 
     # ── Lanzadores ──────────────────────────────────────────────────────
     Key([mod], "Return", lazy.spawn(terminal), desc="Terminal"),
@@ -243,9 +279,10 @@ groups.append(
 )
 
 widget_defaults = dict(
-    font="JetBrainsMono Nerd Font",
-    fontsize=13,
+    font=theme["font"],
+    fontsize=theme["fontsize"],
     padding=4,
+    foreground=colors["fg"],
 )
 extension_defaults = widget_defaults.copy()
 
@@ -254,10 +291,10 @@ def make_bar(include_systray=True):
     """Barra inferior. Solo la pantalla principal debe llevar el Systray."""
     widgets = [
         widget.GroupBox(
-            highlight_method="border",
-            borderwidth=2,
+            highlight_method=theme["groupbox_highlight_method"],
+            borderwidth=theme["groupbox_borderwidth"],
             rounded=False,
-            this_current_screen_border=colors["fg"],
+            this_current_screen_border=colors["accent"],
             this_screen_border=colors["dim"],
             other_current_screen_border=colors["dim"],
             other_screen_border=colors["border_normal"],
@@ -269,7 +306,7 @@ def make_bar(include_systray=True):
         ),
         # padding 2: el GroupBox deja 10px a su derecha y WindowName 5.2 a la
         # suya; con 2 los huecos quedan en 12/7.2 (centro ≈9.5, como la derecha).
-        widget.CurrentLayout(mode="icon", scale=0.6, foreground=colors["fg"], padding=2),
+        widget.CurrentLayout(mode="icon", scale=0.6, foreground=colors["accent"], padding=2),
         widget.Prompt(cursor_type="block", prompt="> "),
         widget.WindowName(
             stretch=True,
@@ -316,8 +353,8 @@ def make_bar(include_systray=True):
             check_mute_command="pactl get-sink-mute @DEFAULT_SINK@",
             check_mute_string="yes",
             mute_command="pactl set-sink-mute @DEFAULT_SINK@ toggle",
-            volume_up_command="pactl set-sink-volume @DEFAULT_SINK@ +2%",
-            volume_down_command="pactl set-sink-volume @DEFAULT_SINK@ -2%",
+            volume_up_command=HOME("~/.local/bin/volume.sh") + " up",
+            volume_down_command=HOME("~/.local/bin/volume.sh") + " down",
         ),
         # padding 3: sus letras aportan 1.2px internos; 3+1.2+3+1.2 ≈ 9.
         widget.KeyboardLayout(configured_keyboards=["us", "es"], padding=3),
@@ -325,17 +362,22 @@ def make_bar(include_systray=True):
     if include_systray:
         # icon_size 12: tapa dura de Qtile sobre la altura -> ink 12px, igual
         # que globo/imagen/power. padding 5: el icono se sale 4px de su caja,
-        # así que 5-4+8 (Wallpaper) = hueco 9.
+        # así que 5-4+8 (selector de fondo) = hueco 9.
         widgets.append(widget.Systray(padding=5, icon_size=12))
     widgets += [
-        widget.Wallpaper(
-            directory="~/Images/wallpapers/",
-            label="\uf03e",
+        # Selector visual de fondos: antes era widget.Wallpaper, que además
+        # re-sorteaba el fondo en cada recarga de Qtile. Ahora el icono solo
+        # abre la rejilla de rofi (izq.) o sortea (der.); el fondo se guarda
+        # en ~/.local/state/qtile/wallpaper.
+        widget.TextBox(
+            text="\uf03e",
             # Este glifo se sale 4.2px de su celda; con padding 8 el hueco
             # resultante con el reloj queda en ~9px, igual que el resto.
             padding=8,
-            option="fill",
-            random_selection=True,
+            mouse_callbacks={
+                "Button1": lazy.spawn(HOME("~/.local/bin/wallpaper.sh") + " menu"),
+                "Button3": lazy.spawn(HOME("~/.local/bin/wallpaper.sh") + " random"),
+            },
         ),
         widget.Clock(
             format="%a %d %b %H:%M:%S",
@@ -349,10 +391,17 @@ def make_bar(include_systray=True):
             mouse_callbacks={"Button1": lazy.spawn(HOME("~/.local/bin/powermenu.sh"))},
         ),
     ]
-    return bar.Bar(widgets, 24, background=colors["bg"])
+    return bar.Bar(
+        widgets,
+        theme["bar_size"],
+        background=theme["bar_background"],
+        opacity=theme["bar_opacity"],
+        border_width=theme["bar_border_width"],
+        border_color=theme["bar_border_color"],
+    )
 
 
-screens = [Screen(bottom=make_bar())]
+screens = [Screen(**{theme["bar_position"]: make_bar()})]
 # Con un segundo monitor, añadir:
 # screens.append(Screen(bottom=make_bar(include_systray=False)))
 
@@ -387,6 +436,8 @@ bring_front_click = False
 floats_kept_above = True
 cursor_warp = False
 floating_layout = layout.Floating(
+    border_focus=colors["border_focus"],
+    border_normal=colors["border_normal"],
     float_rules=[
         # Run the utility of `xprop` to see the wm class and name of an X client.
         *layout.Floating.default_float_rules,
@@ -407,18 +458,18 @@ floating_layout = layout.Floating(
 layouts = [
     layout.Max(),
     layout.MonadTall(
-        margin=8,
-        border_width=2,
-        border_focus=colors["fg"],
+        margin=theme["layout"]["margin"],
+        border_width=theme["layout"]["border_width"],
+        border_focus=colors["border_focus"],
         border_normal=colors["border_normal"],
-        ratio=0.6,
+        ratio=theme["layout"]["ratio_tall"],
     ),
     layout.MonadWide(
-        margin=8,
-        border_width=2,
-        border_focus=colors["fg"],
+        margin=theme["layout"]["margin"],
+        border_width=theme["layout"]["border_width"],
+        border_focus=colors["border_focus"],
         border_normal=colors["border_normal"],
-        ratio=0.7,
+        ratio=theme["layout"]["ratio_wide"],
     ),
 ]
 

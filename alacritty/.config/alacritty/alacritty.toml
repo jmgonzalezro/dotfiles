@@ -3,44 +3,9 @@
 animation = "EaseOutExpo"
 duration = 0
 
-[colors]
-draw_bold_text_with_bright_colors = true
-
-[[colors.indexed_colors]]
-color = "0xF8BD96"
-index = 16
-
-[[colors.indexed_colors]]
-color = "0xF5E0DC"
-index = 17
-
-[colors.bright]
-black = "0x988BA2"
-blue = "0x96CDFB"
-cyan = "0x89DCEB"
-green = "0xABE9B3"
-magenta = "0xF5C2E7"
-red = "0xF28FAD"
-white = "0xD9E0EE"
-yellow = "0xFAE3B0"
-
-[colors.cursor]
-cursor = "0xF5E0DC"
-text = "0x1E1D2F"
-
-[colors.normal]
-black = "0x6E6C7E"
-blue = "0x96CDFB"
-cyan = "0x89DCEB"
-green = "0xABE9B3"
-magenta = "0xF5C2E7"
-red = "0xF28FAD"
-white = "0xD9E0EE"
-yellow = "0xFAE3B0"
-
-[colors.primary]
-background = "#1d2021"
-foreground = "#928374"
+# Los colores vienen del tema activo (qtile/themes/*.toml). No los pongas aquí:
+# este archivo se carga DESPUÉS de sus imports y los sobrescribiría.
+# Generado en ~/.local/state/qtile/app/alacritty.toml
 
 [cursor]
 blink_interval = 500
@@ -87,11 +52,12 @@ semantic_escape_chars = ",│`|:\"' ()[]{}<>\t"
 
 [window]
 decorations = "none"
-opacity = 0.92
+# opacity viene del tema (opaca en 'washed', 0.92 en 'monochrome')
 
 [window.dimensions]
 columns = 86
 lines = 22
 
 [general]
+import = ["~/.local/state/qtile/app/alacritty.toml"]
 live_config_reload = true

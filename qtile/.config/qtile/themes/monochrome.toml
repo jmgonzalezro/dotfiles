@@ -1,0 +1,93 @@
+# Tema actual: monocromo minimalista.
+# Valores copiados 1:1 de la config previa al selector (octubre 2026).
+
+name = "monochrome"
+description = "Monocromo hacker: negro casi puro, gris claro y rojo de urgencia."
+
+font = "JetBrainsMono Nerd Font"
+fontsize = 13
+
+bar_size = 24
+bar_position = "bottom"   # top | bottom
+bar_background = "#0a0a0a"
+bar_border_width = 0
+bar_border_color = "#0a0a0a"
+bar_opacity = 1.0
+groupbox_borderwidth = 2
+groupbox_highlight_method = "border"
+
+[colors]
+bg            = "#0a0a0a"
+fg            = "#e6e6e6"
+accent        = "#e6e6e6"
+dim           = "#5c5c5c"
+border_focus  = "#e6e6e6"
+border_normal = "#262626"
+urgent        = "#ff0000"
+
+[layout]
+margin       = 8
+border_width = 2
+ratio_tall   = 0.6
+ratio_wide   = 0.7
+
+# ── Alacritty ──────────────────────────────────────────────────────────
+# Paleta que ya tenías (catppuccin-macchiato), copiada 1:1.
+[alacritty]
+opacity      = 0.92
+background   = "#1d2021"
+foreground   = "#928374"
+cursor       = "0xF5E0DC"
+cursor_text  = "0x1E1D2F"
+indexed_16   = "0xF8BD96"
+indexed_17   = "0xF5E0DC"
+
+normal_black   = "0x6E6C7E"
+normal_red     = "0xF28FAD"
+normal_green   = "0xABE9B3"
+normal_yellow  = "0xFAE3B0"
+normal_blue    = "0x96CDFB"
+normal_magenta = "0xF5C2E7"
+normal_cyan    = "0x89DCEB"
+normal_white   = "0xD9E0EE"
+
+bright_black   = "0x988BA2"
+bright_red     = "0xF28FAD"
+bright_green   = "0xABE9B3"
+bright_yellow  = "0xFAE3B0"
+bright_blue    = "0x96CDFB"
+bright_magenta = "0xF5C2E7"
+bright_cyan    = "0x89DCEB"
+bright_white   = "0xD9E0EE"
+
+# ── Rofi ───────────────────────────────────────────────────────────────
+[rofi]
+background          = "#0a0a0a"
+foreground          = "#e6e6e6"
+dim                 = "#5c5c5c"
+urgent              = "#ff0000"
+accent              = "#ff0000"
+selection_background = "#e6e6e6"
+selection_foreground = "#0a0a0a"
+border              = 2
+border_color        = "#e6e6e6"
+radius              = 0
+font                = "JetBrainsMono Nerd Font 13"
+
+# ── Dunst ──────────────────────────────────────────────────────────────
+[dunst]
+frame_width = 2
+frame_color = "#e6e6e6"
+font        = "JetBrainsMono Nerd Font 10"
+
+low_background      = "#0a0a0a"
+low_foreground      = "#5c5c5c"
+low_frame_color     = "#5c5c5c"
+
+normal_background   = "#0a0a0a"
+normal_foreground   = "#e6e6e6"
+normal_frame_color  = "#e6e6e6"
+
+critical_background = "#0a0a0a"
+critical_foreground = "#ff0000"
+critical_frame_color = "#ff0000"
