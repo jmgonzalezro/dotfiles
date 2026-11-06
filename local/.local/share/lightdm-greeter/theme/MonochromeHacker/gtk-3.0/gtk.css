@@ -1,0 +1,513 @@
+/* ─────────────────────────────────────────────────────────────
+   Monochrome Hacker — tema del greeter de LightDM (GTK3)
+   Base: Adwaita dark para menús/diálogos y estados no cubiertos.
+   Paleta Qtile: #0a0a0a · #e6e6e6 · #5c5c5c · #262626 · #ff3b30
+   ───────────────────────────────────────────────────────────── */
+
+@import url("resource:///org/gtk/libgtk/theme/Adwaita/gtk-contained-dark.css");
+
+@define-color mh_bg        #0a0a0a;
+@define-color mh_card      #0e0e0e;
+@define-color mh_input     #080808;
+@define-color mh_fg        #e6e6e6;
+@define-color mh_dim       #7a7a7a;
+@define-color mh_mute      #5c5c5c;
+@define-color mh_line      #262626;
+@define-color mh_line_soft #1c1c1c;
+@define-color mh_accent    #ff3b30;
+
+/* ── Superficie raíz: deja ver el fondo ─────────────────────── */
+
+#screen,
+.lightdm-gtk-greeter {
+    background-color: transparent;
+    background-image: none;
+}
+
+/* ── Panel superior ─────────────────────────────────────────── */
+
+#panel_window {
+    background-color: #0a0a0a;
+    background-image: none;
+    border: none;
+    border-top: 1px solid @mh_line_soft;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    text-shadow: none;
+}
+
+#panel_window menubar {
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    box-shadow: none;
+    padding: 0 16px;
+    margin: 0;
+    color: #9a9a9a;
+    text-shadow: none;
+}
+
+#panel_window menuitem {
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    min-height: 0;
+    padding: 5px 8px;
+    margin: 0;
+    color: #9a9a9a;
+    font-family: "JetBrainsMono Nerd Font Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-shadow: none;
+}
+
+#panel_window menuitem:hover,
+#panel_window menuitem:active {
+    background-color: transparent;
+    box-shadow: none;
+    color: @mh_fg;
+}
+
+#panel_window menuitem label {
+    color: inherit;
+    padding: 0;
+    text-shadow: none;
+}
+
+#panel_window menuitem image {
+    color: @mh_dim;
+    -gtk-icon-shadow: none;
+}
+
+#panel_window menuitem:hover image {
+    color: @mh_fg;
+}
+
+#power_menuitem:hover image {
+    color: @mh_accent;
+}
+
+/* El reloj y el host son GtkSeparatorMenuItem: su nodo es `separator`,
+   no `menuitem`. Se estilan aparte para que no hereden el fondo de la
+   regla genérica de separadores. */
+
+#clock_menuitem,
+#host_menuitem {
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    box-shadow: none;
+    padding: 5px 10px;
+    margin: 0;
+    color: @mh_fg;
+    font-family: "JetBrainsMono Nerd Font Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-shadow: none;
+}
+
+#clock_menuitem label {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+#host_menuitem {
+    color: @mh_mute;
+}
+
+/* ── Tarjeta de login ───────────────────────────────────────── */
+
+#login_window {
+    background-color: #0e0e0e;
+    background-image: none;
+    border: 1px solid @mh_line;
+    border-top: 1px solid #3a3a3a;
+    border-radius: 0;
+    box-shadow: 0 26px 80px rgba(0, 0, 0, 0.85);
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+    min-height: 0;
+    font-size: 100%;
+    text-shadow: none;
+}
+
+#login_window #login_box {
+    background-color: transparent;
+}
+
+#login_window frame {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+#login_window frame > border {
+    border: none;
+    background-color: transparent;
+}
+
+#login_window grid {
+    margin: 0 8px 16px 8px;
+    background-color: transparent;
+}
+
+/* Pie de la tarjeta, separado como una barra de estado */
+
+#login_window #buttonbox_frame > border {
+    border-top: 1px solid @mh_line_soft;
+    border-right: none;
+    border-bottom: none;
+    border-left: none;
+}
+
+#login_window #buttonbox_frame box {
+    margin: 14px 8px 0 8px;
+}
+
+#user_image_border {
+    background-color: transparent;
+    border: none;
+}
+
+/* Usuario como “título de terminal” de la tarjeta */
+
+#user_combobox {
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    border-bottom: 1px solid @mh_line_soft;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    min-width: 360px;
+    font-family: "JetBrainsMono Nerd Font Mono", monospace;
+    font-size: 15px;
+    font-weight: 700;
+    color: @mh_fg;
+}
+
+#user_combobox > box > button.combo {
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 2px 2px 14px 2px;
+    margin: 0;
+    min-height: 0;
+    color: @mh_fg;
+    text-shadow: none;
+}
+
+#user_combobox > box > button.combo:hover {
+    background-color: transparent;
+    color: #ffffff;
+}
+
+#user_combobox arrow {
+    color: @mh_mute;
+    -gtk-icon-shadow: none;
+    min-width: 11px;
+    min-height: 11px;
+    margin: 0 2px 12px 0;
+}
+
+/* Campos de usuario/contraseña */
+
+#prompt_entry {
+    background-color: @mh_input;
+    background-image: none;
+    border: 1px solid @mh_line;
+    border-radius: 0;
+    box-shadow: none;
+    color: @mh_fg;
+    caret-color: @mh_fg;
+    padding: 10px 12px;
+    min-height: 22px;
+    font-family: "JetBrainsMono Nerd Font Mono", monospace;
+    font-size: 14px;
+    text-shadow: none;
+}
+
+#prompt_entry:focus {
+    background-color: #0b0b0b;
+    border-color: @mh_fg;
+    box-shadow: none;
+}
+
+#prompt_entry selection {
+    background-color: @mh_fg;
+    color: @mh_bg;
+}
+
+#prompt_entry image {
+    color: @mh_mute;
+    -gtk-icon-shadow: none;
+}
+
+#prompt_entry:disabled {
+    color: @mh_mute;
+    border-color: @mh_line_soft;
+}
+
+/* Botones */
+
+#login_button {
+    background-color: @mh_fg;
+    background-image: none;
+    border: 1px solid @mh_fg;
+    border-radius: 0;
+    box-shadow: none;
+    color: #0a0a0a;
+    font-family: "JetBrainsMono Nerd Font Mono", monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 9px 20px;
+    min-height: 0;
+    text-shadow: none;
+}
+
+#login_button:hover {
+    background-color: #ffffff;
+    border-color: #ffffff;
+}
+
+#login_button:active {
+    background-color: #c9c9c9;
+    border-color: #c9c9c9;
+}
+
+#login_button:focus {
+    box-shadow: 0 0 0 2px rgba(230, 230, 230, 0.22);
+}
+
+#login_button:disabled {
+    background-color: transparent;
+    color: @mh_mute;
+    border-color: @mh_line;
+}
+
+#cancel_button {
+    background-color: transparent;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 0;
+    box-shadow: none;
+    color: @mh_dim;
+    font-family: "JetBrainsMono Nerd Font Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 9px 14px;
+    min-height: 0;
+    text-shadow: none;
+}
+
+#cancel_button:hover {
+    border-color: @mh_line;
+    color: @mh_fg;
+}
+
+#cancel_button:active {
+    background-color: #1a1a1a;
+}
+
+/* Mensajes de error / info dentro de la tarjeta */
+
+#greeter_infobar {
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    border-top: 1px solid rgba(255, 59, 48, 0.30);
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    text-shadow: none;
+}
+
+#greeter_infobar > revealer > box {
+    background-color: rgba(255, 59, 48, 0.06);
+    border: none;
+    box-shadow: none;
+    padding: 2px 26px 2px 32px;
+    text-shadow: none;
+}
+
+#greeter_infobar label {
+    color: #ff6b60;
+    font-family: "JetBrainsMono Nerd Font Mono", monospace;
+    font-size: 11px;
+    text-shadow: none;
+}
+
+#greeter_infobar button {
+    background-color: transparent;
+    background-image: none;
+    border: 1px solid @mh_line;
+    border-radius: 0;
+    box-shadow: none;
+    color: @mh_dim;
+    text-shadow: none;
+}
+
+/* ── Menús desplegables (sesión, idioma, teclado, apagado) ──── */
+
+menu {
+    background-color: #0e0e0e;
+    border: 1px solid @mh_line;
+    border-radius: 0;
+    padding: 4px 0;
+}
+
+menu menuitem {
+    background-color: transparent;
+    background-image: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 7px 16px;
+    color: #cfcfcf;
+    font-family: "JetBrainsMono Nerd Font Mono", monospace;
+    font-size: 12px;
+}
+
+menu menuitem:hover {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+menu menuitem:disabled {
+    color: @mh_mute;
+}
+
+menu separator {
+    background-color: @mh_line_soft;
+    min-height: 1px;
+    margin: 4px 0;
+}
+
+menu menuitem check,
+menu menuitem radio {
+    min-width: 14px;
+    min-height: 14px;
+    border: 1px solid @mh_line;
+    background-color: transparent;
+    border-radius: 0;
+}
+
+menu menuitem check:checked,
+menu menuitem radio:checked {
+    background-color: @mh_fg;
+    border-color: @mh_fg;
+    color: @mh_bg;
+}
+
+/* ── Diálogo de apagado / reinicio ──────────────────────────── */
+
+#power_window {
+    background-color: #0e0e0e;
+    background-image: none;
+    border: 1px solid @mh_line;
+    border-radius: 0;
+    box-shadow: 0 22px 70px rgba(0, 0, 0, 0.85);
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+    min-height: 0;
+    font-size: 100%;
+    text-shadow: none;
+}
+
+#power_window frame {
+    background-color: transparent;
+    border: none;
+}
+
+#power_window frame > border {
+    border: none;
+    background-color: transparent;
+}
+
+/* power_title / power_text / power_icon no tienen `name` CSS:
+   se estilan por estructura (la rejilla del diálogo). */
+
+#power_window grid label {
+    color: @mh_fg;
+    font-family: "JetBrainsMono Nerd Font Mono", monospace;
+    font-size: 12px;
+}
+
+#power_window grid image {
+    color: @mh_accent;
+    -gtk-icon-shadow: none;
+}
+
+#power_ok_button {
+    background-color: @mh_fg;
+    background-image: none;
+    border: 1px solid @mh_fg;
+    border-radius: 0;
+    box-shadow: none;
+    color: @mh_bg;
+    font-family: "JetBrainsMono Nerd Font Mono", monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 7px 18px;
+    min-height: 0;
+    text-shadow: none;
+}
+
+#power_ok_button:hover {
+    background-color: #ffffff;
+    border-color: #ffffff;
+}
+
+#power_cancel_button {
+    background-color: transparent;
+    background-image: none;
+    border: 1px solid @mh_line;
+    border-radius: 0;
+    box-shadow: none;
+    color: @mh_dim;
+    font-family: "JetBrainsMono Nerd Font Mono", monospace;
+    font-size: 11px;
+    padding: 7px 14px;
+    min-height: 0;
+    text-shadow: none;
+}
+
+#power_cancel_button:hover {
+    border-color: @mh_fg;
+    color: @mh_fg;
+}
+
+/* ── Varios ─────────────────────────────────────────────────── */
+
+tooltip {
+    background-color: #0e0e0e;
+    border: 1px solid @mh_line;
+    border-radius: 0;
+    color: @mh_fg;
+    box-shadow: none;
+}
+
+scrollbar {
+    background-color: transparent;
+}
+
+scrollbar slider {
+    background-color: @mh_line;
+    border-radius: 0;
+    min-width: 4px;
+    min-height: 4px;
+}
+
+scrollbar slider:hover {
+    background-color: @mh_dim;
+}

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=X-GNOME-Metatheme
+Name=MonochromeHacker
+Comment=Monochrome hacker theme for the LightDM GTK greeter
+Encoding=UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme=MonochromeHacker
+IconTheme=Adwaita
+CursorTheme=Adwaita
+FontName=JetBrainsMono Nerd Font 12
