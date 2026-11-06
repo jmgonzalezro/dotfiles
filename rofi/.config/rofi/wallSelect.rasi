@@ -1,0 +1,80 @@
+/* wallSelect.rasi — rejilla de miniaturas para elegir fondo.
+   Se pasa con `rofi -dmenu -show-icons -theme wallSelect.rasi`, así que este
+   archivo es el tema completo: no hereda el layout de config.rasi.
+   La paleta sí viene del tema activo (archivo generado por theme.sh). */
+
+configuration {
+    show-icons:              true;
+    hover-select:            true;
+    me-select-entry:         "MouseSecondary";
+    me-accept-entry:         "MousePrimary";
+    disable-history:         true;
+}
+
+?import "~/.local/state/qtile/app/rofi-colors.rasi"
+
+/* Ventana transparente: el panel es el mainbox, con el mismo velo que la barra. */
+window {
+    width:                   1200px;
+    location:                center;
+    anchor:                  center;
+    background-color:        transparent;
+    border:                  0px;
+    padding:                 0px;
+    spacing:                 0px;
+    cursor:                  "default";
+}
+
+mainbox {
+    children:                [ listview ];
+    padding:                 22px;
+    spacing:                 0px;
+    background-color:        @bg;
+    border:                  1px;
+    border-color:            @dim;
+}
+
+listview {
+    columns:                 4;
+    lines:                   2;
+    spacing:                 16px;
+    fixed-height:            true;
+    fixed-columns:           true;
+    dynamic:                 false;
+    cycle:                   true;
+    scrollbar:               false;
+    background-color:        transparent;
+    text-color:              @fg;
+}
+
+element {
+    orientation:             vertical;
+    padding:                 4px;
+    spacing:                 6px;
+    background-color:        transparent;
+    text-color:              @fg;
+}
+
+element-icon {
+    size:                    250px;
+    border:                  1px;
+    border-color:            @dim;
+    background-color:        transparent;
+    cursor:                  pointer;
+}
+
+element-text {
+    horizontal-align:        0.5;
+    vertical-align:          0.5;
+    padding:                 2px;
+    background-color:        transparent;
+    text-color:              @fg;
+}
+
+/* Selección: marco crema como el de la ventana enfocada en Qtile. */
+element selected {
+    background-color:        transparent;
+    border:                  1px;
+    border-color:            @accent;
+    text-color:              @accent;
+}
