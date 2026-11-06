@@ -1,4 +1,4 @@
-# Paquetes stow para el PC de TRABAJO (WSL/Windows).
+# Paquetes stow para WSL (PC de trabajo, Windows).
 # Sin GUI: nada de qtile/rofi/picom/dunst ni scripts X11.
 # Requiere: sudo apt install stow
 nvim

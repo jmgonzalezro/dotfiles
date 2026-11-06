@@ -20,7 +20,8 @@ sudo apt install git stow
 ```
 git clone --recurse-submodules git@github.com:jmgonzalezro/dotfiles.git
 cd dotfiles
-./bootstrap.sh desktop      # o: laptop | work-wsl
+./bootstrap.sh desktop      # o: laptop | wsl
+./bootstrap.sh laptop       # en el portátil
 ```
 
 `bootstrap.sh`:
@@ -29,9 +30,19 @@ cd dotfiles
 2. Elimina symlinks previos que apunten al repo (idempotente: se puede repetir).
 3. Hace `stow` de cada paquete en `$HOME` (o `$TARGET`).
 
-Opciones: `--dry-run` (simula sin tocar nada) y argumento de host para forzarlo.
-La detección automática usa `/proc/version` (WSL) y el hostname (ver función
-`detect_host` en el script).
+Opciones: `--dry-run` (simula sin tocar nada). La detección automática no usa
+el hostname (es `jose` en todas las máquinas): **WSL** se detecta por el kernel
+y para el resto crea `~/.dotfiles-host` con `desktop` o `laptop`, o pasa el
+host como argumento.
+
+Notas por host:
+
+- **Greeter LightDM** (desktop/laptop): tras el bootstrap, instala/actualiza el
+  tema en el sistema con `sudo ~/.local/share/lightdm-greeter/install.sh`
+  (idempotente, con respaldos `.bak`; se aplica en el próximo login).
+- **Wallpapers** (desktop/laptop): `~/Images/wallpapers` queda enlazado al repo;
+  el fondo elegido se guarda por máquina en `~/.local/state/qtile/wallpaper`.
+- **WSL**: sin GUI; el manifiesto solo instala nvim, opencode-wsl y bash/tmux.
 
 ## Estructura
 
@@ -39,7 +50,8 @@ La detección automática usa `/proc/version` (WSL) y el hostname (ver función
 hosts/              # manifiestos: qué paquetes van en cada máquina
   desktop.list
   laptop.list
-  work-wsl.list
+  wsl.list
+wallpapers/         # ~/Images/wallpapers (fondos del selector de wallpaper)
 host-desktop/       # overrides de qtile del sobremesa (host.py: xrandr 144Hz)
 host-laptop/        # overrides del portátil (host.py vacío de momento)
 qtile/ rofi/ dunst/ alacritty/ picom/ gsimplecal/ scripts/ systemd/ ...  # paquetes compartidos

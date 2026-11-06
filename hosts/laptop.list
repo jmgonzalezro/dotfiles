@@ -3,6 +3,7 @@
 alacritty
 dunst
 gsimplecal
+local
 nvim
 opencode
 picom
@@ -11,4 +12,5 @@ rofi
 scripts
 systemd
 tmux_bash
+wallpapers
 host-laptop

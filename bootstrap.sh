@@ -18,24 +18,28 @@ HOST=""
 for arg in "$@"; do
     case "$arg" in
         --dry-run) DRY=1 ;;
-        -h|--help) echo "uso: $0 [desktop|laptop|work-wsl] [--dry-run]"; exit 0 ;;
+        -h|--help) echo "uso: $0 [desktop|laptop|wsl] [--dry-run]"; exit 0 ;;
         *) HOST="$arg" ;;
     esac
 done
 
 detect_host() {
-    if grep -qi microsoft /proc/version 2>/dev/null; then
-        echo "work-wsl"; return
+    # 1) Override por máquina (el hostname es "jose" en todas las máquinas)
+    if [ -f "$HOME/.dotfiles-host" ]; then
+        head -n1 "$HOME/.dotfiles-host"
+        return
     fi
-    case "$(cat /proc/sys/kernel/hostname 2>/dev/null)" in
-        jose) echo "desktop" ;;   # sobremesa; añade aquí el hostname del portátil
-        *)    echo "" ;;
-    esac
+    # 2) WSL se detecta solo por el kernel
+    if grep -qi microsoft /proc/version 2>/dev/null; then
+        echo "wsl"; return
+    fi
+    echo ""
 }
 
 [ -n "$HOST" ] || HOST="$(detect_host)"
 if [ -z "$HOST" ]; then
-    echo "No he podido detectar la máquina. Uso: $0 [desktop|laptop|work-wsl]" >&2
+    echo "No he podido detectar la máquina. Uso: $0 [desktop|laptop|wsl]" >&2
+    echo "Consejo: crea ~/.dotfiles-host con \"desktop\" o \"laptop\" en cada máquina." >&2
     exit 1
 fi
 
@@ -92,5 +96,10 @@ for pkg in "${PKGS[@]}"; do
     echo "→ stow $pkg"
     stow "${STOW_OPTS[@]}" "${extra[@]}" --dir="$REPO" --target="$TARGET" "$pkg"
 done
+
+if printf '%s\n' "${PKGS[@]}" | grep -qx local; then
+    echo "ℹ Greeter LightDM: instala/actualiza el tema en el sistema con:"
+    echo "    sudo ~/.local/share/lightdm-greeter/install.sh"
+fi
 
 echo "✅ Listo. Si ha cambiado algo de qtile/X11, reinicia la sesión gráfica."
