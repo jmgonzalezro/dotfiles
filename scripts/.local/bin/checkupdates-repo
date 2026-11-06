@@ -9,5 +9,5 @@ trap 'rm -rf "$db"' EXIT
 mkdir -p "$db"
 ln -s /var/lib/pacman/local "$db" 2>/dev/null
 fakeroot -- pacman -Sy --dbpath "$db" --logfile /dev/null --disable-sandbox >/dev/null 2>&1 || exit 1
-pacman -Qu --dbpath "$db" 2>/dev/null
+pacman -Qu --dbpath "$db" 2>/dev/null | grep -vF '[ignored]'
 exit 0
