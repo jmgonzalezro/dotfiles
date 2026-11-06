@@ -117,10 +117,15 @@ source "$OSH"/oh-my-bash.sh
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
 
-# Variables para Wayland
-export XDG_SESSION_TYPE=wayland
-export XDG_CURRENT_DESKTOP=Qtile
-export WLR_NO_HARDWARE_CURSORS=1  # Vital si la pantalla se queda negra o no ves el cursor
+# Nota: NO forzar variables de sesión gráfica aquí.
+# XDG_SESSION_TYPE y XDG_CURRENT_DESKTOP los define logind al iniciar la sesión
+# (x11 o wayland según la entrada elegida en LightDM). Forzarlas rompe la
+# detección automática de las apps y provoca comportamientos incoherentes.
+#
+# WLR_NO_HARDWARE_CURSORS solo aplica a wlroots (Wayland). En X11 no hace nada.
+# Si algún día entras por la sesión "Qtile (Wayland)" y no ves el cursor,
+# expórtala solo en esa sesión:
+#   export WLR_NO_HARDWARE_CURSORS=1
 
 # Preferred editor for local and remote sessions
 if command -v nvim &>/dev/null; then
