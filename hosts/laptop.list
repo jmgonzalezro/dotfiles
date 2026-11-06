@@ -1,0 +1,14 @@
+# Paquetes stow para el PORTÁTIL (mismo stack qtile X11).
+# Un paquete por línea (comentarios con #).
+alacritty
+dunst
+gsimplecal
+nvim
+opencode
+picom
+qtile
+rofi
+scripts
+systemd
+tmux_bash
+host-laptop

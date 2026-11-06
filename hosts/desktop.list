@@ -1,0 +1,15 @@
+# Paquetes stow para el SOBREMESA (X11 + qtile).
+# Un paquete por línea (comentarios con #).
+alacritty
+dunst
+gsimplecal
+local
+nvim
+opencode
+picom
+qtile
+rofi
+scripts
+systemd
+tmux_bash
+host-desktop

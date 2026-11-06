@@ -56,11 +56,20 @@ def load_theme(name):
 theme = load_theme(os.environ.get("QTILE_THEME") or current_theme_name())
 colors = theme["colors"]
 
+# Overrides por máquina: el paquete stow host-<máquina> deja ~/.config/qtile/host.py
+# (p. ej. host_autostart con el xrandr de cada equipo). Opcional.
+host_autostart = []
+HOST_FILE = CONFIG_DIR / "host.py"
+if HOST_FILE.is_file():
+    exec(compile(HOST_FILE.read_text(encoding="utf-8"), str(HOST_FILE), "exec"), globals())
+
 
 # ── Arranque (solo una vez por sesión) ─────────────────────────────────
 @hook.subscribe.startup_once
 def autostart():
-    subprocess.Popen(["xrandr", "--output", "DP-2", "--mode", "1920x1080", "--rate", "144.00"])
+    # Comandos específicos de la máquina (xrandr, etc.) desde ~/.config/qtile/host.py
+    for cmd in host_autostart:
+        subprocess.Popen(cmd)
     # Screensaver 10 min (→ i3lock vía xss-lock) + DPMS: monitor off a los 20 min
     subprocess.Popen(["xset", "s", "600", "0"])
     subprocess.Popen(["xset", "dpms", "600", "900", "1200"])

@@ -1,0 +1,4 @@
+# Archivos que la propia app opencode reescribe en runtime: no stowearlos
+# (el repo conserva una copia curada como referencia).
+cli\.json$
+\.gitignore$
