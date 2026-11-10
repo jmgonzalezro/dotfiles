@@ -1,4 +1,7 @@
 # Archivos que la propia app opencode reescribe en runtime: no stowearlos
 # (el repo conserva una copia curada como referencia).
+# opencode.jsonc: opencode le inyecta claves propias ("plugins") al arrancar,
+# asi que su copia local SIEMPRE difiere del repo -> provocaba conflicto en stow.
 cli\.json$
 \.gitignore$
+opencode\.jsonc$
