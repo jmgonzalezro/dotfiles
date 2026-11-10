@@ -4,10 +4,12 @@ alacritty
 dunst
 gsimplecal
 local
+mpd
 nvim
 opencode
 picom
 qtile
+rmpc
 rofi
 scripts
 systemd
