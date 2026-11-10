@@ -137,6 +137,7 @@ keys = [
     Key([mod], "d", lazy.spawn("rofi -show combi -combi-modes window,drun -p '>'"), desc="Lanzador + selector de ventanas"),
     Key([mod], "r", lazy.spawncmd(), desc="Prompt de comandos en la barra"),
     Key([mod, "shift"], "o", lazy.spawn(f"{terminal} -e opencode"), desc="OpenCode (asistente IA)"),
+    Key([mod], "c", lazy.spawn(f"{terminal} -e {HOME('~/.local/bin/cover-grid')}"), desc="Cover grid (rejilla de carátulas)"),
 
     # ── Pantallas ───────────────────────────────────────────────────────
     Key([mod], "q", lazy.to_screen(0), desc="Foco a pantalla 0"),
