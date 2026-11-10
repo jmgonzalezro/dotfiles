@@ -1,0 +1,406 @@
+#!/usr/bin/env python3
+"""cover-grid — rejilla de carátulas estilo Winamp sobre ueberzugpp + MPD.
+
+Muestra todas las carátulas del directorio de música ordenadas por fecha de
+descarga (mtime), navegas con las flechas y con Enter suena el álbum.
+
+Teclas:
+  flechas/hjkl   moverse        Enter     reproducir álbum (limpia la cola)
+  Espacio/a      añadir a la cola sin reproducir
+  s              cambiar orden (recientes ↓ / recientes ↑ / nombre)
+  u              actualizar la base de datos de MPD
+  PgUp/PgDn      página         g/G       primera/última
+  q / Esc        salir
+"""
+
+import hashlib
+import json
+import os
+import select
+import socket
+import subprocess
+import sys
+import termios
+import time
+import tty
+
+MPD_HOST, MPD_PORT = "127.0.0.1", 6600
+COVER_NAMES = ("cover.jpg", "cover.png", "cover.webp", "folder.jpg",
+               "front.jpg", "front.png", "albumart.jpg", "albumart.png")
+AUDIO_EXT = {".mp3", ".flac", ".ogg", ".opus", ".m4a", ".aac", ".wav", ".ape", ".wv"}
+CACHE_DIR = os.path.expanduser("~/.cache/cover-grid")
+ORDERS = (("fecha ↓", lambda a: (-a["mtime"], a["name"].lower())),
+          ("fecha ↑", lambda a: (a["mtime"], a["name"].lower())),
+          ("nombre", lambda a: (a["name"].lower(),)))
+
+HEADER_H, FOOTER_H = 1, 1
+IMG_W, IMG_H = 12, 6        # carátula en celdas: 12x6 ≈ cuadrada
+BUFFER_H = 1                 # holgura: ueberzugpp dibuja ~0.7 celda más abajo
+LABEL_H = 2                 # línea de fecha + línea de título
+CELL_W = IMG_W + 1          # 1 columna de separación
+CELL_H = IMG_H + BUFFER_H + LABEL_H
+MIN_COLS, MIN_LINES = 2 * CELL_W + 2, CELL_H + 2   # 28x11
+
+
+# ------------------------------------------------------------------- MPD
+def mpd(*cmds):
+    """Envía comandos a MPD; devuelve la respuesta del último. Lanza si ACK."""
+    with socket.create_connection((MPD_HOST, MPD_PORT), 5) as s:
+        s.recv(4096)                          # saludo
+        out = ""
+        for c in cmds:
+            s.sendall((c + "\n").encode())
+            buf = b""
+            while not buf.endswith(b"OK\n") and b"ACK" not in buf:
+                chunk = s.recv(65536)
+                if not chunk:
+                    break
+                buf += chunk
+            text = buf.decode(errors="replace")
+            if text.startswith("ACK"):
+                raise RuntimeError(text.strip())
+            out = text
+        return out
+
+
+def q(path):
+    """Escapa una ruta para el protocolo MPD."""
+    return '"' + path.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+# -------------------------------------------------------------- biblioteca
+def music_dir():
+    conf = os.path.expanduser("~/.config/mpd/mpd.conf")
+    try:
+        with open(conf) as f:
+            for line in f:
+                s = line.strip()
+                if s.startswith("music_directory"):
+                    value = s.split(None, 1)[1].strip().strip("\"'")
+                    return os.path.expanduser(value)
+    except (OSError, IndexError):
+        pass
+    return os.path.expanduser("~/Music")
+
+
+def find_cover(album_dir, songs):
+    for name in COVER_NAMES:
+        p = os.path.join(album_dir, name)
+        if os.path.isfile(p):
+            return p
+    try:                                        # cualquier imagen suelta
+        for fn in sorted(os.listdir(album_dir)):
+            if fn.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
+                return os.path.join(album_dir, fn)
+    except OSError:
+        pass
+    os.makedirs(CACHE_DIR, exist_ok=True)       # embebida → caché con ffmpeg
+    dest = os.path.join(CACHE_DIR,
+                        hashlib.md5(album_dir.encode()).hexdigest() + ".jpg")
+    if os.path.isfile(dest) and os.path.getsize(dest) > 0:
+        return dest
+    for song in songs:
+        r = subprocess.run(
+            ["ffmpeg", "-v", "error", "-i", song, "-an", "-frames:v", "1", dest],
+            capture_output=True)
+        if r.returncode == 0 and os.path.getsize(dest) > 0:
+            return dest
+        if os.path.exists(dest):
+            os.remove(dest)
+    return None
+
+
+def scan_albums(root):
+    albums = []
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if not d.startswith(".")]
+        songs = [os.path.join(dirpath, f) for f in filenames
+                 if os.path.splitext(f)[1].lower() in AUDIO_EXT]
+        if not songs:
+            continue
+        mtime = max(os.path.getmtime(s) for s in songs)
+        albums.append({
+            "dir": dirpath,
+            "name": os.path.relpath(dirpath, root),
+            "mtime": mtime,
+            "date": time.strftime("%d/%m/%y", time.localtime(mtime)),
+            "cover": find_cover(dirpath, songs),
+        })
+    return albums
+
+
+def short_name(rel):
+    """'Andy Stott - 2026 - Late Loop' → 'Late Loop'; 'Artista/Álbum' → 'Álbum'."""
+    base = os.path.basename(rel) or rel
+    return base.split(" - ")[-1] if " - " in base else base
+
+
+# ---------------------------------------------------------------- entradas
+def read_key(fd):
+    """Tecla pulsada: 'up'/'down'/... o el propio carácter."""
+    try:
+        raw = os.read(fd, 1)
+    except OSError:
+        return "q"
+    if not raw:
+        return "q"
+    if raw != b"\x1b":
+        try:
+            return raw.decode()
+        except UnicodeDecodeError:
+            return "?"
+    seq = b""
+    while True:                                 # secuencia de escape (flechas…)
+        r, _, _ = select.select([fd], [], [], 0.05)
+        if not r:
+            break
+        seq += os.read(fd, 8)
+        if len(seq) >= 3:
+            break
+    return {b"\x1b[A": "up", b"\x1b[B": "down", b"\x1b[C": "right",
+            b"\x1b[D": "left", b"\x1b[5~": "pgup", b"\x1b[6~": "pgdn",
+            b"\x1bOA": "up", b"\x1bOB": "down", b"\x1bOC": "right",
+            b"\x1bOD": "left"}.get(seq, "esc")
+
+
+def tmux_visible(pane):
+    """¿Se ve en pantalla el pane de tmux donde corre el programa?
+
+    Combina: ventana activa de su sesión + que alguien tenga esa sesión
+    mostrada (window_visible no existe en tmux 3.8).
+    """
+    try:
+        out = subprocess.run(
+            ["tmux", "display", "-p", "-t", pane,
+             "#{window_active} #{session_name}"],
+            capture_output=True, text=True, timeout=3)
+        active, session = out.stdout.split()
+        if active != "1":
+            return False
+        clients = subprocess.run(
+            ["tmux", "list-clients", "-F", "#{client_session}"],
+            capture_output=True, text=True, timeout=3)
+        return session in clients.stdout.split()
+    except Exception:
+        return True
+
+
+# ------------------------------------------------------------------ main
+def main():
+    if not sys.stdout.isatty():
+        sys.exit("cover-grid: necesita una terminal interactiva")
+    if not os.environ.get("DISPLAY"):
+        sys.exit("cover-grid: no hay DISPLAY (necesita X11)")
+    if not any(os.access(os.path.join(p, "ueberzugpp"), os.X_OK)
+               for p in os.environ.get("PATH", "").split(":")):
+        sys.exit("cover-grid: falta ueberzugpp → sudo pacman -S ueberzugpp")
+
+    root = music_dir()
+    if not os.path.isdir(root):
+        sys.exit(f"cover-grid: no existe el directorio de música: {root}")
+    albums = scan_albums(root)
+    if not albums:
+        sys.exit(f"cover-grid: no hay álbumes en {root} "
+                 "(¿MPD desactualizado? pulsa 'u' dentro de la rejilla)")
+
+    order = 0
+    albums.sort(key=ORDERS[order][1])
+    sel = page = 0
+    msg = ""
+    per_page = 1
+    hidden = False
+    pane = os.environ.get("TMUX_PANE")
+
+    # ueberzugpp: en tmux/terminal con WINDOWID basta X11; sin WINDOWID hay que
+    # preguntar capacidades por códigos de escape (en tmux rompe el dibujado).
+    cmd = ["ueberzugpp", "layer", "--output", "x11"]
+    if not os.environ.get("WINDOWID"):
+        cmd.append("--use-escape-codes")
+    uz = subprocess.Popen(cmd, stdin=subprocess.PIPE,
+                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                          text=True)
+    imgs, shown = {}, set()                      # índice → identificador
+
+    def clear_images():
+        for ident in imgs.values():
+            try:
+                uz.stdin.write(json.dumps(
+                    {"action": "remove", "identifier": ident}) + "\n")
+                uz.stdin.flush()
+            except (BrokenPipeError, ValueError):
+                break
+        imgs.clear()
+        shown.clear()
+
+    def render_images(first, count, cols):
+        for i in range(first, min(first + count, len(albums))):
+            if i in shown:
+                continue
+            a = albums[i]
+            if not a["cover"]:
+                continue
+            r, c = divmod(i - first, cols)
+            try:
+                uz.stdin.write(json.dumps({
+                    "action": "add", "identifier": f"cover{i}",
+                    "path": a["cover"], "x": 1 + c * CELL_W,
+                    "y": HEADER_H + r * CELL_H,
+                    "width": IMG_W, "height": IMG_H}) + "\n")
+                uz.stdin.flush()
+                imgs[i] = f"cover{i}"
+                shown.add(i)
+            except (BrokenPipeError, ValueError):
+                break
+
+    def cell(text, selected=False, style=""):
+        if selected:
+            text = "▶" + text
+        text = text[:IMG_W].ljust(IMG_W)
+        return f"\x1b[{style}m{text}\x1b[0m" if (style or selected) else text
+
+    def draw(first, cols, rows, pages, term_cols, term_lines):
+        lines = []
+        header = (f" \x1b[1mCOVER GRID\x1b[0m  {len(albums)} álbumes  ·  "
+                  f"orden: \x1b[33m{ORDERS[order][0]}\x1b[0m")
+        if pages > 1:
+            header += f"  ·  \x1b[36mpág {page + 1}/{pages}\x1b[0m"
+        if msg:
+            header += f"  ·  \x1b[32m{msg}\x1b[0m"
+        lines.append(header)
+        for r in range(rows):
+            # zona de carátula (ueberzugpp encima) + fila de holgura
+            lines.extend([""] * (IMG_H + BUFFER_H))
+            la, lb = "", ""
+            for c in range(cols):
+                idx = first + r * cols + c
+                if idx >= len(albums):
+                    break
+                a = albums[idx]
+                selc = idx == sel
+                la += cell(a["date"], selc, "7" if selc else "") + " "
+                lb += cell(short_name(a["name"]), False,
+                           "1" if selc else "") + " "
+            lines.append(" " + la.rstrip())
+            lines.append(" " + lb.rstrip())
+        footer = (" ↑↓←→ mover · Enter reproducir · Espacio/a añadir · "
+                  "s orden · u actualizar · q salir")[:term_cols]
+        lines.extend([""] * max(0, term_lines - len(lines) - 1))
+        lines.append(footer)
+        # OPOST está desactivado (tty.setraw): hay que mandar \r\n explícito
+        sys.stdout.write("\x1b[H" + "\x1b[K\r\n".join(lines) + "\x1b[K\x1b[J")
+        sys.stdout.flush()
+
+    fd = sys.stdin.fileno()
+    old = termios.tcgetattr(fd)
+    sys.stdout.write("\x1b[?1049h\x1b[?25l\x1b[2J")
+    sys.stdout.flush()
+    dirty = True
+    last_vis = 0.0
+    try:
+        tty.setraw(fd)
+        while True:
+            if dirty:
+                term = os.get_terminal_size()
+                cols = max(1, (term.columns - 2) // CELL_W)
+                rows = max(1, (term.lines - HEADER_H - FOOTER_H) // CELL_H)
+                if cols < 2 or rows < 1:
+                    sys.stdout.write(
+                        f"\x1b[H\x1b[2J ventana demasiado pequeña "
+                        f"(mínimo {MIN_COLS}x{MIN_LINES}) \x1b[K")
+                    sys.stdout.flush()
+                else:
+                    per_page = cols * rows
+                    pages = -(-len(albums) // per_page)
+                    sel = max(0, min(sel, len(albums) - 1))
+                    new_page = sel // per_page
+                    if new_page != page:
+                        clear_images()
+                        page = new_page
+                    first = page * per_page
+                    if not hidden:
+                        render_images(first, per_page, cols)
+                    draw(first, cols, rows, pages,
+                         term.columns, term.lines)
+                    msg = ""
+                dirty = False
+
+            r, _, _ = select.select([fd], [], [], 0.5)
+            if not r:
+                now = time.time()               # ocultar al cambiar de pane
+                if pane and now - last_vis >= 2.0:
+                    last_vis = now
+                    vis = tmux_visible(pane)
+                    if vis and hidden:
+                        hidden, dirty = False, True
+                    elif not vis and not hidden:
+                        hidden = True
+                        clear_images()
+                continue
+
+            ch = read_key(fd)
+            if ch in ("q", "esc", "\x03"):
+                break
+            elif ch in ("down", "j"):
+                sel = min(sel + cols, len(albums) - 1)
+            elif ch in ("up", "k"):
+                sel = max(sel - cols, 0)
+            elif ch in ("right", "l"):
+                sel = min(sel + 1, len(albums) - 1)
+            elif ch in ("left", "h"):
+                sel = max(sel - 1, 0)
+            elif ch == "g":
+                sel = 0
+            elif ch == "G":
+                sel = len(albums) - 1
+            elif ch == "pgdn":
+                sel = min(sel + per_page, len(albums) - 1)
+            elif ch == "pgup":
+                sel = max(sel - per_page, 0)
+            elif ch == "s":
+                clear_images()
+                order = (order + 1) % len(ORDERS)
+                albums.sort(key=ORDERS[order][1])
+                sel = page = 0
+                msg = f"orden: {ORDERS[order][0]}"
+            elif ch == "u":
+                try:
+                    mpd("update")
+                    msg = "actualizando base de datos de MPD…"
+                except Exception as e:
+                    msg = f"MPD: {str(e)[:50]}"
+            elif ch in ("\r", " ", "a"):
+                a = albums[sel]
+                rel = os.path.relpath(a["dir"], root)
+                name = short_name(a["name"])
+                try:
+                    if ch == "\r":
+                        mpd("clear", f"add {q(rel)}", "play")
+                        msg = f"▶ {name}"
+                    else:
+                        mpd(f"add {q(rel)}")
+                        msg = f"+ {name} en la cola"
+                except Exception as e:
+                    msg = f"MPD: {str(e)[:50]}"
+            dirty = True
+    finally:
+        clear_images()
+        try:
+            uz.stdin.write(json.dumps({"action": "close"}) + "\n")
+            uz.stdin.flush()
+        except Exception:
+            pass
+        uz.terminate()
+        try:
+            uz.wait(timeout=3)
+        except Exception:
+            uz.kill()
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+        sys.stdout.write("\x1b[?25h\x1b[?1049l")
+        sys.stdout.flush()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
